@@ -9,7 +9,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 print("Démarrage du bot...")
 
-#Événement lorsque le bot est prêt
+#Événement lorsque le bot est prêt.
 @bot.event
 async def on_ready():
     print(f'Votre bot {bot.user} est ONLINE.')
@@ -29,7 +29,7 @@ async def on_ready():
     except Exception as e:
         print(e)
 
-#Commandes qui regroupent toutes les commandes
+#Commandes qui regroupent toutes les commandes.
 @bot.tree.command(name="help", description="Affiche la liste des commandes disponibles.")
 async def help(interaction: discord.Interaction):
     embed = discord.Embed(
@@ -41,7 +41,7 @@ async def help(interaction: discord.Interaction):
     embed.add_field(name="/hello", value="Dis bonjour au bot", inline=True)
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
-#Commande simple pour dire bonjour au bot(avec latence)
+#Commande simple pour dire bonjour au bot(avec latence).
 @bot.tree.command(name="hello", description="Dis bonjour au bot" )
 async def hello(interaction: discord.Interaction):
     latency_ms = round(bot.latency * 1000)

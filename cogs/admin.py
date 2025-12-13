@@ -6,7 +6,7 @@ class Admin(commands.Cog):
         self.bot = bot
 
 
-        # Commandes pour expluser et bannir des membres
+        #Commandes pour expluser et bannir des membres.
         @bot.tree.command(name="kick", description="Expulse un membre")
         async def kick(interaction: discord.Interaction, membres: discord.Member, raison: str = "Aucune raison fournie"):
             if not interaction.user.guild_permissions.kick_members:

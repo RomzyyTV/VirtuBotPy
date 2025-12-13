@@ -5,7 +5,7 @@ class Tool(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        #commande pour faire répéter un texte
+        #Commande pour faire répéter un texte.
         @bot.tree.command(name="say", description="Fait répéter un texte")
         async def say(interaction: discord.Interaction, messages: str):
             if not interaction.user.guild_permissions.manage_messages:
@@ -14,7 +14,7 @@ class Tool(commands.Cog):
                 print(f"{interaction.user} a utilisé la commande /say et a dis : {messages}")
                 await interaction.response.send_message(messages)
 
-        #commande pour faire répéter un texte sous forme d'embed
+        #Commande pour faire répéter un texte sous forme d'embed.
         @bot.tree.command(name="sayembed", description="Fait répéter un texte sous forme d'embed configurable")
         async def sayembed(
             interaction: discord.Interaction, 
@@ -81,6 +81,39 @@ class Tool(commands.Cog):
             
             print(f"{interaction.user} a utilisé la commande /sayembed avec le titre : {titre}")
             await interaction.response.send_message(embed=embed)
+
+        #Commande pour créer une annonce de partenariat.
+        @bot.tree.command(name="partenariats", description="Crée une annonce de partenariat")
+        async def partenariats(
+            interaction: discord.Interaction,
+            nom_serveur: str,
+            description: str,
+            lien_serveur: str = None
+        ):
+            if not interaction.user.guild_permissions.manage_guild:
+                await interaction.response.send_message("❌ Tu n'as pas la permission d'utiliser cette commande.", ephemeral=True)
+                return
+            
+            embed = discord.Embed(
+                title=f"🤝 Nouveau Partenariat : {nom_serveur}",
+                description=description,
+                color=discord.Color.gold()
+            )
+            
+            if lien_serveur:
+                embed.add_field(
+                    name="📎 Lien du serveur",
+                    value=f"[Rejoindre →]({lien_serveur})",
+                    inline=False
+                )
+            
+            embed.set_footer(text=f"Annoncé par {interaction.user}")
+            
+            print(f"{interaction.user} a créé une annonce de partenariat pour : {nom_serveur}")
+            await interaction.response.send_message(embed=embed)
+
+
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Tool(bot))
