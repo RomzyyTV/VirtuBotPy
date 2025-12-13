@@ -14,6 +14,7 @@ class Tool(commands.Cog):
                 print(f"{interaction.user} a utilisé la commande /say et a dis : {messages}")
                 await interaction.response.send_message(messages)
 
+        #commande pour faire répéter un texte sous forme d'embed
         @bot.tree.command(name="sayembed", description="Fait répéter un texte sous forme d'embed configurable")
         async def sayembed(
             interaction: discord.Interaction, 
@@ -29,7 +30,6 @@ class Tool(commands.Cog):
                 await interaction.response.send_message("❌ Tu n'as pas la permission d'utiliser cette commande.",ephemeral=True)
                 return
             
-            # Dictionnaire des couleurs disponibles
             couleurs = {
                 "bleu": discord.Color.blue(),
                 "rouge": discord.Color.red(),
@@ -44,25 +44,35 @@ class Tool(commands.Cog):
                 "gold": discord.Color.gold(),
             }
             
-            # Récupère la couleur ou utilise bleu par défaut
             couleur_choisie = couleurs.get(couleur.lower(), discord.Color.blue())
             
-            # Crée l'embed
+            def is_valid_url(url):
+                if not url:
+                    return False
+                return url.lower().startswith(('http://', 'https://')) and len(url) > 10
+            
+
             embed = discord.Embed(
                 title=titre,
                 description=description,
                 color=couleur_choisie
             )
             
-            # Ajoute les éléments optionnels
+
             if auteur:
                 embed.set_author(name=auteur)
             
-            if image_url:
+            if image_url and is_valid_url(image_url):
                 embed.set_image(url=image_url)
+            elif image_url:
+                await interaction.response.send_message(f"❌ L'URL de l'image n'est pas valide: {image_url}", ephemeral=True)
+                return
             
-            if thumbnail_url:
+            if thumbnail_url and is_valid_url(thumbnail_url):
                 embed.set_thumbnail(url=thumbnail_url)
+            elif thumbnail_url:
+                await interaction.response.send_message(f"❌ L'URL de la miniature n'est pas valide: {thumbnail_url}", ephemeral=True)
+                return
             
             if footer:
                 embed.set_footer(text=footer)
