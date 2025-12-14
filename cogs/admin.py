@@ -105,6 +105,28 @@ class Admin(commands.Cog):
             except Exception as e:
                 await interaction.response.send_message(f"Erreur lors de l'exclusion: {e}")
 
+        @bot.tree.command(name="untimeout", description="Retire l'exclusion temporaire (mute) d'un membre")
+        async def untimeout(interaction: discord.Interaction, membres: discord.Member):
+            """Retire l'exclusion temporaire (timeout/mute) d'un membre"""
+            if not interaction.user.guild_permissions.moderate_members:
+                await interaction.response.send_message(
+                    "❌ Tu n'as pas la permission de gérer les exclusions.",
+                    ephemeral=True
+                )
+                return
+
+            try:
+                await membres.send(f"✅ Votre exclusion temporaire a été levée.\n**Modérateur :** {interaction.user}")
+            except:
+                pass
+            
+            try:
+                await membres.timeout(None, reason=f"Exclusion levée par {interaction.user}")
+                await interaction.response.send_message(f"✅ L'exclusion de {membres.mention} a été levée.")
+                print(f"L'exclusion de {membres} a été levée par {interaction.user}")
+            except Exception as e:
+                await interaction.response.send_message(f"Erreur lors de la levée de l'exclusion: {e}")
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Admin(bot))
