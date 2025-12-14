@@ -12,7 +12,7 @@ class Base(commands.Cog):
         bot = bot_instance
         self.bot = bot_instance
         
-        # Enregistrer les commandes dans le constructeur
+        #Commandes de base (/help /hello).
         @bot.tree.command(name="help", description="Affiche la liste des commandes disponibles.")
         async def help(interaction: discord.Interaction):
             embed = discord.Embed(
