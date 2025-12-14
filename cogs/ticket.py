@@ -169,7 +169,7 @@ class RoleSelect(discord.ui.Select):
                 description=f"ID: {role.id}"[:100]
             ))
         
-        # Si aucun rôle valide, ajouter une option par défaut
+
         if not options:
             options.append(discord.SelectOption(
                 label="Aucun rôle disponible",
@@ -185,7 +185,7 @@ class RoleSelect(discord.ui.Select):
         )
     
     async def callback(self, interaction: discord.Interaction):
-        # Vérifier si c'est l'option "none"
+
         if "none" in self.values:
             embed = discord.Embed(
                 title="❌ Aucun rôle disponible",
