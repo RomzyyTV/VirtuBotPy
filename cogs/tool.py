@@ -112,6 +112,38 @@ class Tool(commands.Cog):
             print(f"{interaction.user} a créé une annonce de partenariat pour : {nom_serveur}")
             await interaction.response.send_message(embed=embed)
 
+        @bot.tree.command(name="botinfo", description="Affiche les informations du bot")
+        async def botinfo(interaction: discord.Interaction):
+            embed = discord.Embed(
+                title="🤖 Informations sur VirtuBot",
+                color=discord.Color.blue()
+            )
+            embed.add_field(name="Nom du Bot", value=self.bot.user.name, inline=True)
+            embed.add_field(name="ID du Bot", value=self.bot.user.id, inline=True)
+            embed.add_field(name="Nombre de serveurs", value=len(self.bot.guilds), inline=True)
+            embed.add_field(name="Nombre d'utilisateurs", value=len(set(self.bot.get_all_members())), inline=True)
+            embed.add_field(name="Préfixe", value="!", inline=True)
+            embed.set_footer(text="VirtuBot - Open Source Discord Bot")
+            
+            await interaction.response.send_message(embed=embed)
+            print(f"{interaction.user} a utilisé la commande /botinfo.")
+
+        @bot.tree.command(name="infouser", description="Affiche les informations d'un utilisateur")
+        async def infouser(interaction: discord.Interaction, membre: discord.Member):
+            embed = discord.Embed(
+                title=f"👤 Informations sur {membre}",
+                color=discord.Color.green()
+            )
+            embed.add_field(name="Nom d'utilisateur", value=membre.name, inline=True)
+            embed.add_field(name="ID", value=membre.id, inline=True)
+            embed.add_field(name="Date de création du compte", value=membre.created_at.strftime("%d/%m/%Y %H:%M:%S"), inline=True)
+            embed.add_field(name="Date de join au serveur", value=membre.joined_at.strftime("%d/%m/%Y %H:%M:%S"), inline=True)
+            embed.add_field(name="Rôles", value=", ".join([role.mention for role in membre.roles if role.name != "@everyone"]), inline=False)
+            embed.set_thumbnail(url=membre.avatar.url if membre.avatar else membre.default_avatar.url)
+            embed.set_footer(text="VirtuBot - Open Source Discord Bot")
+            
+            await interaction.response.send_message(embed=embed)
+            print(f"{interaction.user} a utilisé la commande /infouser pour voir les informations de {membre}.")
 
 
 async def setup(bot: commands.Bot):
