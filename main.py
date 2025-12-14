@@ -29,7 +29,7 @@ async def on_ready():
     ║                                                                ║
     ╚════════════════════════════════════════════════════════════════╝
     """)
-    time.sleep(2)
+    time.sleep(5)
     await bot.change_presence(
         status=discord.Status.dnd,
         activity=discord.Game("VirtuBot | Open Source Bot")
