@@ -4,14 +4,17 @@
 
 [![Python](https://img.shields.io/badge/Python-3.14-blue.svg)](https://www.python.org/)
 [![Discord.py](https://img.shields.io/badge/discord.py-2.3+-blue.svg)](https://discordpy.readthedocs.io/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Active-success.svg)]()
+[![Discord](https://img.shields.io/badge/Discord-Rejoindre-7289DA?logo=discord&logoColor=white)](https://discord.gg/2hXnp3std8)
 
 **Un bot Discord moderne, modulaire et open-source 🚀**
 
-_Fait par [Falous-dev](https://github.com/Falous-dev) avec ❤️_
+_Fait par [Falous-dev](https://github.com/Falous-dev) _
 
-[Installation](#-installation) • [Fonctionnalités](#-fonctionnalités) • [Configuration](#%EF%B8%8F-configuration) • [Commandes](#-commandes) • [Contributing](#-contribuer)
+![Commits](https://img.shields.io/github/commit-activity/m/Falous-dev/VirtuBot?style=flat-square&label=Commits)
+![Last Commit](https://img.shields.io/github/last-commit/Falous-dev/VirtuBot?style=flat-square&label=Dernier%20commit)
+
+[Installation](#-installation) • [Fonctionnalités](#-fonctionnalités) • [Configuration](#%EF%B8%8F-configuration) • [Commandes](#-commandes) • [Discord](https://discord.gg/2hXnp3std8)
 
 ---
 
@@ -25,7 +28,6 @@ _Fait par [Falous-dev](https://github.com/Falous-dev) avec ❤️_
 
 - 🎯 **Modulaire** : Architecture basée sur des Cogs pour une organisation claire
 - 🔧 **Personnalisable** : Code ouvert et facilement modifiable
-- 🌐 **Multi-serveurs** : Supporte plusieurs serveurs avec configurations indépendantes
 - 🎨 **Interface moderne** : Utilise les dernières fonctionnalités Discord (Slash Commands, Embeds, Buttons)
 - 📦 **Sans base de données** : Utilise JSON pour une simplicité maximale
 
@@ -55,8 +57,17 @@ _Fait par [Falous-dev](https://github.com/Falous-dev) avec ❤️_
 ### 🔧 Configuration
 
 - Configuration par serveur avec JSON
-- Commande `/adminbot` pour gérer toutes les options
 - Interface avec menus déroulants et boutons
+
+---
+
+## ⚠️ Clause de non-responsabilité
+
+Ce projet est fourni **"tel quel"**, sans aucune garantie, explicite ou implicite.
+
+L'auteur ne peut être tenu responsable des dommages, pertes de données, erreurs, pannes ou tout autre problème résultant de l'utilisation, de la mauvaise utilisation ou de la modification de ce code.
+
+**En utilisant ce projet, vous acceptez l'entière responsabilité de son usage.**
 
 ---
 
@@ -139,12 +150,6 @@ python main.py
 | `/say <message>`                            | Fait parler le bot               | Gérer les messages   |
 | `/sayembed <titre> <description> <couleur>` | Crée un embed personnalisé       | Gérer les messages   |
 | `/partenariats`                             | Envoie un message de partenariat | Gérer le serveur     |
-
-### ⚙️ Configuration
-
-| Commande    | Description                              | Permissions requises |
-| ----------- | ---------------------------------------- | -------------------- |
-| `/adminbot` | Ouvre le panneau de configuration du bot | Gérer le serveur     |
 
 ---
 
@@ -233,16 +238,6 @@ Les contributions sont les bienvenues ! Voici comment vous pouvez aider :
 - Commentez votre code en français
 - Testez vos modifications avant de soumettre
 - Mettez à jour la documentation si nécessaire
-
----
-
-## ⚠️ Clause de non-responsabilité
-
-Ce projet est fourni **"tel quel"**, sans aucune garantie, explicite ou implicite.
-
-L'auteur ne peut être tenu responsable des dommages, pertes de données, erreurs, pannes ou tout autre problème résultant de l'utilisation, de la mauvaise utilisation ou de la modification de ce code.
-
-**En utilisant ce projet, vous acceptez l'entière responsabilité de son usage.**
 
 ---
 

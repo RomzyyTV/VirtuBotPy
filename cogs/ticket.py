@@ -169,14 +169,32 @@ class RoleSelect(discord.ui.Select):
                 description=f"ID: {role.id}"[:100]
             ))
         
+        # Si aucun rôle valide, ajouter une option par défaut
+        if not options:
+            options.append(discord.SelectOption(
+                label="Aucun rôle disponible",
+                value="none",
+                description="Créez des rôles dans votre serveur d'abord"
+            ))
+        
         super().__init__(
             placeholder=placeholder_text.get(action, "Sélectionnez des rôles..."),
             min_values=1,
-            max_values=min(len(options), 10),
+            max_values=min(len(options), 10) if options else 1,
             options=options
         )
     
     async def callback(self, interaction: discord.Interaction):
+        # Vérifier si c'est l'option "none"
+        if "none" in self.values:
+            embed = discord.Embed(
+                title="❌ Aucun rôle disponible",
+                description="Veuillez créer des rôles dans votre serveur avant de configurer les rôles de support.",
+                color=0xff0000
+            )
+            await interaction.response.edit_message(embed=embed, view=None)
+            return
+        
         self.selected_roles.clear()
         self.selected_roles.extend([int(value) for value in self.values])
         
