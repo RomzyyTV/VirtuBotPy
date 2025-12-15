@@ -140,7 +140,9 @@ class Admin(commands.Cog):
             guild_id = str(interaction.guild.id)
 
             try:
-                with open('blacklist.json', 'r') as f:
+                if not os.path.exists('config'):
+                    os.makedirs('config')
+                with open('config/blacklist.json', 'r') as f:
                     blacklist_data = json.load(f)
             except FileNotFoundError:
                 blacklist_data = {}
@@ -155,7 +157,7 @@ class Admin(commands.Cog):
 
             blacklist_data[guild_id][user_id] = raison
 
-            with open('blacklist.json', 'w') as f:
+            with open('config/blacklist.json', 'w') as f:
                 json.dump(blacklist_data, f, indent=4)
 
 
@@ -179,7 +181,7 @@ class Admin(commands.Cog):
     async def on_member_join(self, member: discord.Member):
         """Bannit automatiquement les utilisateurs blacklistés qui rejoignent le serveur"""
         try:
-            with open('blacklist.json', 'r') as f:
+            with open('config/blacklist.json', 'r') as f:
                 blacklist_data = json.load(f)
         except FileNotFoundError:
             return

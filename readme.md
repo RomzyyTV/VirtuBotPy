@@ -183,10 +183,11 @@ Le bot utilise des fichiers JSON pour stocker les configurations :
 ```
 VirtuBot/
 ├── main.py                 # Point d'entrée du bot
-├── config.json            # Configuration globale (généré automatiquement)
-├── ticket_config.json     # Configuration des tickets par serveur
-├── ticket_data.json       # Données des tickets par serveur
-├── blacklist.json         # Liste des utilisateurs blacklistés par serveur
+├── config/                 # Fichiers de configuration
+│   ├── ticket_config.json # Configuration des tickets par serveur
+│   ├── ticket_data.json   # Données des tickets par serveur
+│   ├── blacklist.json     # Liste des utilisateurs blacklistés par serveur
+│   └── meme.json          # URLs des memes pour la commande /jeux-meme
 ├── cogs/                  # Modules du bot
 │   ├── admin.py          # Commandes de modération + blacklist
 │   ├── base.py           # Commandes de base

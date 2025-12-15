@@ -7,8 +7,8 @@ import asyncio
 from datetime import datetime
 
 #Systeme de tickets.
-TICKET_CONFIG_FILE = "ticket_config.json"
-TICKET_DATA_FILE = "ticket_data.json"
+TICKET_CONFIG_FILE = "config/ticket_config.json"
+TICKET_DATA_FILE = "config/ticket_data.json"
 
 def load_ticket_config():
     """Charge la configuration des tickets"""
@@ -19,6 +19,8 @@ def load_ticket_config():
 
 def save_ticket_config(data):
     """Sauvegarde la configuration des tickets"""
+    if not os.path.exists('config'):
+        os.makedirs('config')
     with open(TICKET_CONFIG_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
@@ -51,6 +53,8 @@ def load_ticket_data():
 
 def save_ticket_data(data):
     """Sauvegarde les données des tickets"""
+    if not os.path.exists('config'):
+        os.makedirs('config')
     with open(TICKET_DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
