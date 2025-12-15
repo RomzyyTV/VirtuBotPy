@@ -127,6 +127,79 @@ class Admin(commands.Cog):
             except Exception as e:
                 await interaction.response.send_message(f"Erreur lors de la levée de l'exclusion: {e}")
 
+        @bot.tree.command(name="blacklist", description="Bannit un utilisateur du bot")
+        async def blacklist(interaction: discord.Interaction, user_id: str, raison: str = "Aucune raison fournie"):
+            """Bannit un utilisateur du bot en ajoutant son ID à la blacklist"""
+            if not interaction.user.guild_permissions.administrator:
+                await interaction.response.send_message(
+                    "❌ Tu n'as pas la permission d'administrateur.",
+                    ephemeral=True
+                )
+                return
+
+            guild_id = str(interaction.guild.id)
+
+            try:
+                with open('blacklist.json', 'r') as f:
+                    blacklist_data = json.load(f)
+            except FileNotFoundError:
+                blacklist_data = {}
+
+            if guild_id not in blacklist_data:
+                blacklist_data[guild_id] = {}
+
+            if user_id in blacklist_data[guild_id]:
+                await interaction.response.send_message(f"❌ L'utilisateur avec l'ID {user_id} est déjà dans la blacklist.", ephemeral=True)
+                return
+
+
+            blacklist_data[guild_id][user_id] = raison
+
+            with open('blacklist.json', 'w') as f:
+                json.dump(blacklist_data, f, indent=4)
+
+
+            try:
+                member = await interaction.guild.fetch_member(int(user_id))
+                if member:
+                    try:
+                        await member.send(f"❌ Vous avez été banni de **{interaction.guild.name}**.\n**Raison :** {raison}\n\nVous avez été ajouté à la blacklist du serveur.")
+                    except:
+                        pass
+                    await member.ban(reason=f"Blacklist - {raison}")
+            except discord.NotFound:
+                pass
+            except Exception as e:
+                print(f"Erreur lors de la vérification/bannissement: {e}")
+
+            await interaction.response.send_message(f"✅ L'utilisateur avec l'ID {user_id} a été ajouté à la blacklist.\n**Raison :** {raison}\n\n⚠️ Si cet utilisateur rejoint (ou rejoint à nouveau) le serveur, il sera automatiquement banni.")
+            print(f"L'utilisateur avec l'ID {user_id} a été blacklisted par {interaction.user} dans {interaction.guild.name} pour la raison : {raison}")
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
+        """Bannit automatiquement les utilisateurs blacklistés qui rejoignent le serveur"""
+        try:
+            with open('blacklist.json', 'r') as f:
+                blacklist_data = json.load(f)
+        except FileNotFoundError:
+            return
+        
+        guild_id = str(member.guild.id)
+        user_id_str = str(member.id)
+        
+        if guild_id in blacklist_data and user_id_str in blacklist_data[guild_id]:
+            raison = blacklist_data[guild_id][user_id_str]
+            try:
+                await member.send(f"❌ Vous avez été automatiquement banni de **{member.guild.name}**.\n**Raison :** {raison}\n\nVous êtes dans la blacklist du serveur.")
+            except:
+                pass
+            
+            try:
+                await member.ban(reason=f"Blacklist - {raison}")
+                print(f"🔨 {member} (ID: {member.id}) a été automatiquement banni de {member.guild.name} (blacklist)")
+            except Exception as e:
+                print(f"Erreur lors du bannissement automatique de {member}: {e}")
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Admin(bot))

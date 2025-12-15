@@ -38,12 +38,17 @@ _Fait par [Falous-dev](https://github.com/Falous-dev) _
 ### 🛡️ Modération
 
 - **Kick/Ban** : Expulsion et bannissement avec notifications MP et raisons
+- **Clear** : Suppression en masse de messages (1-100)
+- **Timeout/Untimeout** : Exclusion temporaire (mute) des membres
+- **Blacklist** : Système de bannissement automatique par serveur
 - **Système de tickets** : Support client avec canaux privés et staff
 - **Gestion des rôles** : Attribution de rôles de support pour les tickets
 
 ### 🎮 Divertissement
 
-- **Jeux** : Pile ou face, dé, deviner un nombre
+- **Jeux simples** : Pile ou face, dé, deviner un nombre, roulette russe
+- **Quiz de culture** : Plus de 80 questions avec timer de 30 secondes
+- **Puissance 4** : Jeu interactif avec système d'acceptation et timeout
 - **Commandes utiles** : Say, embeds personnalisés, système de partenariats
 
 ### 🎫 Système de Tickets Avancé
@@ -53,6 +58,14 @@ _Fait par [Falous-dev](https://github.com/Falous-dev) _
 - Boutons interactifs (Claim, Join, Priority, Transfer, Close)
 - Archivage automatique des tickets fermés
 - Statistiques utilisateurs et historique
+- Multi-serveur : Configuration séparée par serveur
+
+### 🔨 Système de Blacklist
+
+- **Bannissement automatique** : Les utilisateurs blacklistés sont bannis dès qu'ils rejoignent
+- **Par serveur** : Chaque serveur a sa propre blacklist indépendante
+- **Persistant** : Même si l'utilisateur est débanni puis rejoint, il est rebanni automatiquement
+- **Traçabilité** : Raisons enregistrées et logs détaillés
 
 ### 🔧 Configuration
 
@@ -123,18 +136,25 @@ python main.py
 
 ### 🛠️ Modération
 
-| Commande                  | Description                  | Permissions requises |
-| ------------------------- | ---------------------------- | -------------------- |
-| `/kick <membre> [raison]` | Expulse un membre du serveur | Expulser des membres |
-| `/ban <membre> [raison]`  | Bannit un membre du serveur  | Bannir des membres   |
+| Commande                        | Description                                     | Permissions requises |
+| ------------------------------- | ----------------------------------------------- | -------------------- |
+| `/kick <membre> [raison]`       | Expulse un membre du serveur                    | Expulser des membres |
+| `/ban <membre> [raison]`        | Bannit un membre du serveur                     | Bannir des membres   |
+| `/clear <nombre>`               | Supprime 1 à 100 messages dans le salon         | Gérer les messages   |
+| `/timeout <membre> <durée>`     | Exclut temporairement un membre (mute)          | Modérer les membres  |
+| `/untimeout <membre>`           | Retire l'exclusion temporaire d'un membre       | Modérer les membres  |
+| `/blacklist <user_id> [raison]` | Ajoute un utilisateur à la blacklist du serveur | Administrateur       |
 
 ### 🎮 Jeux
 
-| Commande                  | Description                               |
-| ------------------------- | ----------------------------------------- |
-| `/jeux-pieces`            | Lance une pièce de monnaie (Pile ou Face) |
-| `/jeux-de`                | Lance un dé à 6 faces                     |
-| `/trouve-nombre <nombre>` | Devine un nombre entre 1 et 100           |
+| Commande                    | Description                                 |
+| --------------------------- | ------------------------------------------- |
+| `/jeux-pieces`              | Lance une pièce de monnaie (Pile ou Face)   |
+| `/jeux-de`                  | Lance un dé à 6 faces                       |
+| `/jeux-trouve-nombre`       | Devine un nombre entre 1 et 100             |
+| `/jeux-roulette-russe`      | Joue à la roulette russe (1 chance sur 6)   |
+| `/jeux-de-culture`          | Quiz de culture générale avec 80+ questions |
+| `/puissance-4 <adversaire>` | Joue au Puissance 4 contre un autre joueur  |
 
 ### 🎫 Tickets
 
@@ -163,16 +183,19 @@ Le bot utilise des fichiers JSON pour stocker les configurations :
 VirtuBot/
 ├── main.py                 # Point d'entrée du bot
 ├── config.json            # Configuration globale (généré automatiquement)
-├── ticket_config.json     # Configuration des tickets
-├── ticket_data.json       # Données des tickets
+├── ticket_config.json     # Configuration des tickets par serveur
+├── ticket_data.json       # Données des tickets par serveur
+├── blacklist.json         # Liste des utilisateurs blacklistés par serveur
 ├── cogs/                  # Modules du bot
-│   ├── admin.py          # Commandes de modération
+│   ├── admin.py          # Commandes de modération + blacklist
 │   ├── base.py           # Commandes de base
-│   ├── config.py         # Système de configuration
-│   ├── games.py          # Jeux
+│   ├── games.py          # Jeux (simples + Puissance 4 + Quiz)
 │   ├── ticket.py         # Système de tickets
 │   └── tool.py           # Utilitaires
 ├── requirements.txt       # Dépendances Python
+├── install.bat            # Script d'installation Windows
+├── install.ps1            # Script d'installation PowerShell
+├── install.sh             # Script d'installation Linux/Mac
 └── .env                  # Variables d'environnement (TOKEN)
 ```
 

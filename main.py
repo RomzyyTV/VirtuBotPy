@@ -6,6 +6,7 @@ from discord.ext import commands
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 print("📁 Démarrage du bot...")
@@ -30,6 +31,7 @@ async def on_ready():
     ╚════════════════════════════════════════════════════════════════╝
     """)
     time.sleep(5)
+    print(f"{bot.user} est dans {len(bot.guilds)} serveurs.")
     await bot.change_presence(
         status=discord.Status.dnd,
         activity=discord.Game("VirtuBot | Open Source Bot")
