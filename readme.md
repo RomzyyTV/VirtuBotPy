@@ -155,6 +155,7 @@ python main.py
 | `/jeux-roulette-russe`      | Joue à la roulette russe (1 chance sur 6)   |
 | `/jeux-de-culture`          | Quiz de culture générale avec 80+ questions |
 | `/puissance-4 <adversaire>` | Joue au Puissance 4 contre un autre joueur  |
+| `/jeux-meme`                | Envoie un meme aléatoire                    |
 
 ### 🎫 Tickets
 

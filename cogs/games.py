@@ -412,6 +412,51 @@ class Games(commands.Cog):
             view.message = message
             print(f"{interaction.user} a défié {adversaire} à une partie de Puissance 4")
 
+        @bot.tree.command(name="jeux-meme", description="Envoie un meme aléatoire")
+        async def jeux_meme(interaction: discord.Interaction):
+            """Envoie un meme aléatoire depuis le fichier meme.json"""
+            try:
+                # Créer le dossier config s'il n'existe pas
+                if not os.path.exists('config'):
+                    os.makedirs('config')
+                
+                # Créer le fichier meme.json s'il n'existe pas
+                if not os.path.exists('config/meme.json'):
+                    default_memes = {
+                        "image1": "votre_lien",
+                        "image2": "votre_lien",
+                        "image3": "votre_lien"
+                    }
+                    with open('config/meme.json', 'w', encoding='utf-8') as f:
+                        json.dump(default_memes, f, indent=4)
+                    print("Fichier config/meme.json créé avec des exemples")
+                
+                with open('config/meme.json', 'r', encoding='utf-8') as f:
+                    memes = json.load(f)
+                
+                meme_list = list(memes.values())
+                if not meme_list:
+                    await interaction.response.send_message("❌ Aucun meme disponible!", ephemeral=True)
+                    print(f"{interaction.user} a tenté d'obtenir un meme mais la liste est vide")
+                    return
+                
+                random_meme = random.choice(meme_list)
+                
+                embed = discord.Embed(
+                    title="Voici ton meme 😅",
+                    color=0x00AE86
+                )
+                embed.set_image(url=random_meme)
+                
+                await interaction.response.send_message(embed=embed)
+                print(f"{interaction.user} a demandé un meme: {random_meme}")
+            except FileNotFoundError:
+                await interaction.response.send_message("❌ Le fichier de memes est introuvable!", ephemeral=True)
+                print(f"{interaction.user} a tenté d'obtenir un meme mais le fichier est introuvable")
+            except Exception as e:
+                await interaction.response.send_message(f"❌ Erreur: {e}", ephemeral=True)
+                print(f"Erreur lors de la commande jeux-meme par {interaction.user}: {e}")
+
 
 
 async def setup(bot: commands.Bot):
