@@ -1,8 +1,11 @@
 import discord
 import os
 import time
-import json
+import asyncio
 from discord.ext import commands
+from dotenv import load_dotenv
+
+load_dotenv()
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -11,7 +14,12 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 print("📁 Démarrage du bot...")
 
-#Événement lorsque le bot est prêt.
+async def load_extensions():
+    for extension in os.listdir('./cogs'):
+        if extension.endswith('.py'):
+            await bot.load_extension(f'cogs.{extension[:-3]}')
+            print(f'Le module cogs.{extension[:-3]} a été chargé.')
+
 @bot.event
 async def on_ready():
     print(f'🤖 Votre bot {bot.user} est ONLINE.')
@@ -36,16 +44,22 @@ async def on_ready():
         status=discord.Status.dnd,
         activity=discord.Game("VirtuBot | Open Source Bot")
     )
-    for extension in os.listdir('./cogs'):
-        if extension.endswith('.py'):
-            await bot.load_extension(f'cogs.{extension[:-3]}')
-            print(f'Le module cogs.{extension[:-3]} a été chargé.')
+    
     try:
         synced = await bot.tree.sync()
         print(f"{len(synced)} Commandes ont été chargées.")
     except Exception as e:
         print(e)
 
-BOT = os.getenv("DISCORD_TOKEN")
-bot.run(BOT)
+async def main():
+    async with bot:
+        await load_extensions()
+        BOT = os.getenv("DISCORD_TOKEN")
+        if not BOT:
+            print("❌ ERREUR: Variable DISCORD_TOKEN non définie!")
+            print("Créez un fichier .env avec: DISCORD_TOKEN=votre_token")
+            exit(1)
+        await bot.start(BOT)
+
+asyncio.run(main())
 

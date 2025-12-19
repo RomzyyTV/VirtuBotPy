@@ -99,13 +99,27 @@ L'auteur ne peut être tenu responsable des dommages, pertes de données, erreur
 git clone https://github.com/Falous-dev/VirtuBot.git
 cd VirtuBot
 
-# 2. Installer les dépendances
+# 2. Exécuter le script d'installation
+# Windows:
+install.bat
+
+# Linux/Mac:
+chmod +x install.sh
+./install.sh
+
+# 3. Le bot démarre automatiquement après l'installation
+```
+
+### Installation manuelle
+
+```bash
+# 1. Installer les dépendances
 pip install -r requirements.txt
 
-# 3. Créer le fichier .env
+# 2. Créer le fichier .env
 echo DISCORD_TOKEN=votre_token_ici > .env
 
-# 4. Lancer le bot
+# 3. Lancer le bot
 python main.py
 ```
 
@@ -122,6 +136,54 @@ python main.py
 - ✅ Presence Intent
 - ✅ Server Members Intent
 - ✅ Message Content Intent
+
+---
+
+## 🌐 Panel d'Administration
+
+VirtuBot inclut un panel d'administration web moderne pour gérer votre bot facilement.
+
+### Fonctionnalités du Panel
+
+- 📊 **Dashboard** : Statistiques en temps réel (serveurs, utilisateurs, latence)
+- 🖥️ **Gestion des serveurs** : Liste et détails de tous les serveurs
+- ⚡ **Commandes** : Liste complète des commandes par catégorie
+- 🛡️ **Modération** : Bannir/Expulser des utilisateurs directement depuis le panel
+- ⚙️ **Paramètres** : Configuration de l'API
+
+### Accéder au Panel
+
+1. **Démarrer le bot** : L'API se lance automatiquement sur `http://localhost:3001`
+2. **Ouvrir le panel** : Ouvrez le fichier `panel/index.html` dans votre navigateur
+3. **Profiter** : Le panel se connecte automatiquement à l'API
+
+### Architecture du Panel
+
+```
+VirtuBot/
+├── api/                    # API Flask
+│   └── main.py            # Endpoints REST
+├── panel/                 # Frontend web
+│   ├── index.html        # Page principale
+│   ├── css/
+│   │   └── style.css     # Styles
+│   └── js/
+│       ├── api.js        # Client API
+│       └── app.js        # Logique application
+```
+
+### API Endpoints
+
+| Endpoint                  | Méthode | Description             |
+| ------------------------- | ------- | ----------------------- |
+| `/api/bot/stats`          | GET     | Statistiques du bot     |
+| `/api/guilds`             | GET     | Liste des serveurs      |
+| `/api/guilds/:id`         | GET     | Détails d'un serveur    |
+| `/api/guilds/:id/members` | GET     | Membres d'un serveur    |
+| `/api/guilds/:id/ban`     | POST    | Bannir un utilisateur   |
+| `/api/guilds/:id/kick`    | POST    | Expulser un utilisateur |
+| `/api/bot/commands`       | GET     | Liste des commandes     |
+| `/api/health`             | GET     | État de l'API           |
 
 ---
 
@@ -188,6 +250,15 @@ VirtuBot/
 │   ├── ticket_data.json   # Données des tickets par serveur
 │   ├── blacklist.json     # Liste des utilisateurs blacklistés par serveur
 │   └── meme.json          # URLs des memes pour la commande /jeux-meme
+├── api/                   # API Flask pour le panel
+│   └── main.py           # Endpoints REST
+├── panel/                 # Panel d'administration web
+│   ├── index.html        # Page principale
+│   ├── css/
+│   │   └── style.css     # Styles
+│   └── js/
+│       ├── api.js        # Client API
+│       └── app.js        # Logique application
 ├── cogs/                  # Modules du bot
 │   ├── admin.py          # Commandes de modération + blacklist
 │   ├── base.py           # Commandes de base

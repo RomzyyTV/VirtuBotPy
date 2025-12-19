@@ -12,7 +12,6 @@ class Base(commands.Cog):
         bot = bot_instance
         self.bot = bot_instance
         
-        #Commandes de base (/help /hello).
         @bot.tree.command(name="help", description="Affiche la liste des commandes disponibles.")
         async def help(interaction: discord.Interaction):
             embed = discord.Embed(
@@ -28,7 +27,19 @@ class Base(commands.Cog):
         async def hello(interaction: discord.Interaction):
             latency_ms = round(self.bot.latency * 1000)
             await interaction.response.send_message(f"Hello 😊 latence: {latency_ms} ms", ephemeral=True)
-
+    
+    @commands.Cog.listener()
+    async def on_interaction(self, interaction: discord.Interaction):
+        if interaction.type == discord.InteractionType.application_command:
+            try:
+                from api import main as api_module
+                api_module.log_command(
+                    interaction.command.name,
+                    f"{interaction.user.name}#{interaction.user.discriminator}",
+                    interaction.guild.name if interaction.guild else "DM"
+                )
+            except:
+                pass
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Base(bot))
