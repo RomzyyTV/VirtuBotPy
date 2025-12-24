@@ -28,11 +28,12 @@ def set_bot_client(client):
     global bot_client
     bot_client = client
 
-def log_command(command_name, user_name, guild_name):
+def log_command(command_name, user_name, guild_name, guild_id=None):
     command_logs.append({
         'command': command_name,
         'user': user_name,
         'guild': guild_name,
+        'guild_id': str(guild_id) if guild_id else None,
         'timestamp': datetime.now().isoformat()
     })
 
@@ -147,16 +148,22 @@ def get_guild_details(guild_id):
         if not guild:
             return jsonify({'error': 'Guild not found'}), 404
         
+        owner_name = 'Inconnu'
+        if guild.owner:
+            owner_name = f"{guild.owner.name}#{guild.owner.discriminator}"
+        
         guild_data = {
             'id': str(guild.id),
             'name': guild.name,
             'icon': str(guild.icon.url) if guild.icon else None,
             'memberCount': guild.member_count,
             'ownerId': str(guild.owner_id),
+            'ownerName': owner_name,
             'createdAt': guild.created_at.isoformat(),
             'description': guild.description,
-            'channels': len(guild.channels),
-            'roles': len(guild.roles)
+            'region': 'Automatique',
+            'channels': [{'id': str(c.id), 'name': c.name, 'type': str(c.type)} for c in guild.channels],
+            'roles': [{'id': str(r.id), 'name': r.name} for r in guild.roles]
         }
         return jsonify(guild_data)
     except Exception as e:
