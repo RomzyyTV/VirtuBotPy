@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VirtuBot - Dashboard Serveur</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>VirtuBot</h2>
+            <span class="bot-status" id="botStatus">
+                <i class="fas fa-circle"></i> Chargement...
+            </span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+            </a>
+            <a href="#" class="nav-item active" data-page="overview">
+                <i class="fas fa-chart-bar"></i> Aperçu
+            </a>
+            <a href="#" class="nav-item" data-page="logs">
+                <i class="fas fa-file-alt"></i> Logs
+            </a>
+            <a href="#" class="nav-item" data-page="members">
+                <i class="fas fa-users"></i> Membres
+            </a>
+            <a href="#" class="nav-item" data-page="settings">
+                <i class="fas fa-cog"></i> Paramètres
+            </a>
+        </nav>
+    </div>
+
+
+    <div class="main-content">
+
+        <header class="header">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="header-center">
+                <div class="guild-header" id="guildHeader">
+                    <img src="" alt="Guild Icon" id="guildIcon" style="display: none;">
+                    <h2 id="guildName">Chargement...</h2>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-info" id="userInfo">
+                    <img src="" alt="User Avatar" id="userAvatar" style="display: none;">
+                    <span id="userName">Chargement...</span>
+                </div>
+                <button class="btn-logout" onclick="logout()" title="Déconnexion">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+
+        <main class="content" id="content">
+
+            <div class="page active" id="overview-page">
+                <h1>Aperçu du Serveur</h1>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="memberCount">-</h3>
+                            <p>Membres</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-hashtag"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="channelCount">-</h3>
+                            <p>Salons</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="roleCount">-</h3>
+                            <p>Rôles</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3><i class="fas fa-info-circle"></i> Informations</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Propriétaire:</span>
+                            <span class="info-value" id="guildOwner">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Région:</span>
+                            <span class="info-value" id="guildRegion">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Créé le:</span>
+                            <span class="info-value" id="guildCreated">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="page" id="logs-page">
+                <h1>Logs des Commandes</h1>
+                <div class="logs-filters">
+                    <input type="text" id="logSearch" placeholder="Rechercher...">
+                    <button class="btn btn-primary" onclick="loadGuildLogs()">
+                        <i class="fas fa-sync"></i> Actualiser
+                    </button>
+                </div>
+                <div class="logs-container" id="logsContainer">
+                    <p class="loading">Chargement des logs...</p>
+                </div>
+            </div>
+
+
+            <div class="page" id="members-page">
+                <h1>Membres du Serveur</h1>
+                <div class="members-container" id="membersContainer">
+                    <p class="loading">Chargement des membres...</p>
+                </div>
+            </div>
+
+
+            <div class="page" id="settings-page">
+                <h1>Paramètres du Serveur</h1>
+                <div class="settings-section">
+                    <div class="setting-card">
+                        <h3>Configuration VirtuBot</h3>
+                        <p>Les paramètres du serveur seront disponibles prochainement.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/serveur.js"></script>
+</body>
+
+</html>

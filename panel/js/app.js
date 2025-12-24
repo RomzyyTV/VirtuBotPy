@@ -92,9 +92,6 @@ function navigateToPage(pageName) {
             case 'commands':
                 loadCommands();
                 break;
-            case 'logs':
-                loadLogs();
-                break;
         }
     }
 }
@@ -123,19 +120,30 @@ async function checkBotStatus() {
 
 async function loadDashboard() {
     try {
-        const stats = await getBotStats();
+        // Afficher l'utilisateur dans le header
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
         
-        const botName = document.getElementById('botName');
-        const botAvatar = document.getElementById('botAvatar');
-        
-        botName.textContent = stats.username;
-        if (stats.avatar) {
-            botAvatar.src = stats.avatar;
-            botAvatar.style.display = 'block';
+        if (discordUser) {
+            userName.textContent = discordUser.username;
+            if (discordUser.avatar) {
+                const avatarUrl = `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`;
+                userAvatar.src = avatarUrl;
+                userAvatar.style.display = 'block';
+            }
         }
         
-        document.getElementById('guildCount').textContent = stats.guilds;
-        document.getElementById('userCount').textContent = stats.users.toLocaleString();
+        const stats = await getBotStats();
+        
+        // Filtrer les serveurs où l'utilisateur a les permissions admin
+        const botGuilds = await getGuilds();
+        const adminGuilds = userGuilds.filter(userGuild => {
+            const hasAdmin = (userGuild.permissions & 0x8) === 0x8; // Permission Administrator
+            return hasAdmin && botGuilds.some(botGuild => botGuild.id === userGuild.id);
+        });
+        
+        document.getElementById('adminGuildCount').textContent = adminGuilds.length;
+        document.getElementById('totalGuildCount').textContent = userGuilds.length;
         document.getElementById('latency').textContent = stats.latency;
         
         try {
@@ -169,6 +177,10 @@ async function loadGuilds() {
         guilds.forEach(guild => {
             const guildCard = document.createElement('div');
             guildCard.className = 'guild-card';
+            guildCard.onclick = () => {
+                // Rediriger vers serveur.html avec l'ID du serveur
+                window.location.href = `serveur.html?guild=${guild.id}`;
+            };
             guildCard.innerHTML = `
                 <div class="guild-icon">
                     ${guild.icon ? `<img src="${guild.icon}" alt="${guild.name}">` : guild.name.charAt(0)}
@@ -227,53 +239,6 @@ async function loadCommands() {
     } catch (error) {
         console.error('Erreur lors du chargement des commandes:', error);
         commandsList.innerHTML = '<p class="loading">Erreur lors du chargement des commandes</p>';
-    }
-}
-
-async function loadLogs() {
-    const logsContainer = document.getElementById('logsContainer');
-    const logGuildFilter = document.getElementById('logGuildFilter');
-    
-    logsContainer.innerHTML = '<p class="loading">Chargement des logs...</p>';
-    
-    try {
-        const guilds = currentGuilds.length > 0 ? currentGuilds : await getGuilds();
-        currentGuilds = guilds;
-        
-        logGuildFilter.innerHTML = '<option value="">Tous les serveurs</option>';
-        guilds.forEach(guild => {
-            const option = document.createElement('option');
-            option.value = guild.id;
-            option.textContent = guild.name;
-            logGuildFilter.appendChild(option);
-        });
-        
-        const logs = await getCommandLogs();
-        
-        if (logs.length === 0) {
-            logsContainer.innerHTML = '<p class="loading">Aucun log disponible</p>';
-            return;
-        }
-        
-        logsContainer.innerHTML = '';
-        logs.forEach(log => {
-            const logItem = document.createElement('div');
-            logItem.className = 'log-item';
-            logItem.innerHTML = `
-                <div class="log-header">
-                    <span class="log-command"><i class="fas fa-terminal"></i> /${log.command}</span>
-                    <span class="log-time">${new Date(log.timestamp).toLocaleString('fr-FR')}</span>
-                </div>
-                <div class="log-details">
-                    <span><i class="fas fa-user"></i> ${log.user}</span>
-                    <span><i class="fas fa-server"></i> ${log.guild}</span>
-                </div>
-            `;
-            logsContainer.appendChild(logItem);
-        });
-    } catch (error) {
-        console.error('Erreur lors du chargement des logs:', error);
-        logsContainer.innerHTML = '<p class="loading">Erreur lors du chargement des logs</p>';
     }
 }
 

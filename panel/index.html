@@ -28,9 +28,6 @@
             <a href="#" class="nav-item" data-page="commands">
                 <i class="fas fa-code"></i> Commandes
             </a>
-            <a href="#" class="nav-item" data-page="logs">
-                <i class="fas fa-file-alt"></i> Logs
-            </a>
             <a href="#" class="nav-item" data-page="settings">
                 <i class="fas fa-cog"></i> Paramètres
             </a>
@@ -45,9 +42,9 @@
                 <i class="fas fa-bars"></i>
             </button>
             <div class="header-right">
-                <div class="bot-info" id="botInfo">
-                    <img src="" alt="Bot Avatar" id="botAvatar" style="display: none;">
-                    <span id="botName">VirtuBot</span>
+                <div class="user-info" id="userInfo">
+                    <img src="" alt="User Avatar" id="userAvatar" style="display: none;">
+                    <span id="userName">Chargement...</span>
                 </div>
                 <button class="btn-logout" onclick="logout()" title="Déconnexion">
                     <i class="fas fa-sign-out-alt"></i>
@@ -66,17 +63,8 @@
                             <i class="fas fa-server"></i>
                         </div>
                         <div class="stat-info">
-                            <h3 id="guildCount">-</h3>
-                            <p>Serveurs</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3 id="userCount">-</h3>
-                            <p>Utilisateurs</p>
+                            <h3 id="adminGuildCount">-</h3>
+                            <p>Le bot est présent dans <span id="totalGuildCount">-</span> de vos serveurs</p>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -115,23 +103,6 @@
                     <p class="loading">Chargement des commandes...</p>
                 </div>
             </div>
-
-            <div class="page" id="logs-page">
-                <h1>Logs des Commandes</h1>
-                <div class="logs-filters">
-                    <select id="logGuildFilter">
-                        <option value="">Tous les serveurs</option>
-                    </select>
-                    <input type="text" id="logSearch" placeholder="Rechercher...">
-                    <button class="btn btn-primary" onclick="loadLogs()">
-                        <i class="fas fa-sync"></i> Actualiser
-                    </button>
-                </div>
-                <div class="logs-container" id="logsContainer">
-                    <p class="loading">Chargement des logs...</p>
-                </div>
-            </div>
-
 
             <div class="page" id="settings-page">
                 <h1>Paramètres</h1>
