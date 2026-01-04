@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VirtuBot - Erreurs</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .error-container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .error-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .error-header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .error-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+        .error-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+        .error-grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .error-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-left: 6px solid #e74c3c;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .error-code {
+            font-family: 'Courier New', monospace;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .error-time {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+        }
+
+        .error-message {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .error-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .error-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .error-detail-item i {
+            color: #3498db;
+            font-size: 1.1rem;
+        }
+
+        .error-detail-item span {
+            color: #34495e;
+            font-size: 1rem;
+        }
+
+        .contact-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .contact-message i {
+            margin-right: 0.5rem;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 15px;
+            padding: 4rem 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .empty-state i {
+            font-size: 5rem;
+            color: #2ecc71;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state h2 {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .doc-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+            background: white;
+            color: #3498db;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+
+        .doc-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .documentation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .documentation-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .doc-content {
+            background: white;
+            border-radius: 15px;
+            padding: 2.5rem;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: #c0392b;
+            transform: rotate(90deg);
+        }
+
+        .doc-title {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .error-doc-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .error-doc-item {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .error-doc-code {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 0.7rem;
+        }
+
+        .error-doc-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .error-doc-description {
+            color: #7f8c8d;
+            line-height: 1.7;
+        }
+
+        .button-container {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="error-container">
+        <div class="error-header">
+            <h1>
+                <i class="fas fa-exclamation-triangle"></i>
+                Erreurs VirtuBot
+            </h1>
+            <p>Surveillance des erreurs en temps réel</p>
+        </div>
+
+        <div id="errorsList" class="error-grid">
+            <div class="empty-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <h2>Chargement...</h2>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <a href="#" class="doc-button" onclick="openDocumentation(); return false;">
+                <i class="fas fa-book"></i>
+                Voir la Documentation des Codes d'Erreur
+            </a>
+        </div>
+    </div>
+
+    <!-- Modal Documentation -->
+    <div class="documentation-modal" id="docModal">
+        <div class="doc-content">
+            <button class="close-modal" onclick="closeDocumentation()">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="doc-title">
+                <i class="fas fa-info-circle"></i>
+                Codes d'Erreur et Solutions
+            </h2>
+            <div class="error-doc-grid" id="errorDocumentation"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3001';
+
+        const ERROR_DOCUMENTATION = {
+            'ERR_PERMS': {
+                title: 'Permissions Insuffisantes',
+                description: 'L\'utilisateur ou le bot n\'a pas les permissions nécessaires pour exécuter cette commande. Vérifiez les rôles et permissions du serveur.',
+                severity: 'error'
+            },
+            'ERR_ARGS': {
+                title: 'Argument Manquant',
+                description: 'Une ou plusieurs valeurs requises n\'ont pas été fournies lors de l\'exécution de la commande. Consultez la documentation de la commande.',
+                severity: 'warning'
+            },
+            'ERR_CMD_NOT_FOUND': {
+                title: 'Commande Introuvable',
+                description: 'La commande demandée n\'existe pas. Utilisez /help pour voir la liste des commandes disponibles.',
+                severity: 'info'
+            },
+            'ERR_COOLDOWN': {
+                title: 'Cooldown Actif',
+                description: 'Cette commande a un temps de recharge. Attendez quelques secondes avant de la réutiliser.',
+                severity: 'warning'
+            },
+            'ERR_UNKNOWN': {
+                title: 'Erreur Inconnue',
+                description: 'Une erreur inattendue s\'est produite. Vérifiez les logs du bot pour plus de détails.',
+                severity: 'error'
+            },
+            'ERR_API': {
+                title: 'Erreur API',
+                description: 'Impossible de communiquer avec l\'API externe. Vérifiez votre connexion internet et la configuration.',
+                severity: 'error'
+            },
+            'ERR_DB': {
+                title: 'Erreur Base de Données',
+                description: 'Impossible d\'accéder ou de modifier les données. Vérifiez les fichiers de configuration JSON.',
+                severity: 'error'
+            },
+            'ERR_TIMEOUT': {
+                title: 'Timeout',
+                description: 'L\'opération a pris trop de temps et a été annulée. Réessayez plus tard.',
+                severity: 'warning'
+            }
+        };
+
+        function openDocumentation() {
+            document.getElementById('docModal').classList.add('active');
+            loadDocumentation();
+        }
+
+        function closeDocumentation() {
+            document.getElementById('docModal').classList.remove('active');
+        }
+
+        function loadErrors() {
+            fetch(`${API_URL}/api/errors`)
+                .then(response => response.json())
+                .then(errors => {
+                    const container = document.getElementById('errorsList');
+
+                    if (errors.length === 0) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-info-circle"></i>
+                                <h2>Rien à signaler</h2>
+                                <p>Aucune erreur n'a été enregistrée</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    container.innerHTML = errors.reverse().map(error => `
+                        <div class="error-card">
+                            <div class="error-card-header">
+                                <div class="error-code">${error.error_code}</div>
+                                <div class="error-time">
+                                    <i class="fas fa-clock"></i> ${new Date(error.timestamp).toLocaleString('fr-FR')}
+                                </div>
+                            </div>
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i> ${error.error_message}
+                            </div>
+                            <div class="error-details">
+                                <div class="error-detail-item">
+                                    <i class="fas fa-user"></i>
+                                    <span><strong>Utilisateur:</strong> ${error.user}</span>
+                                </div>
+                                <div class="error-detail-item">
+                                    <i class="fas fa-server"></i>
+                                    <span><strong>Serveur:</strong> ${error.guild}</span>
+                                </div>
+                                ${error.command ? `
+                                <div class="error-detail-item">
+                                    <i class="fas fa-terminal"></i>
+                                    <span><strong>Commande:</strong> /${error.command}</span>
+                                </div>` : ''}
+                            </div>
+                            <div class="contact-message">
+                                <i class="fas fa-headset"></i>
+                                Veuillez contacter l'administrateur du bot si le problème persiste
+                            </div>
+                        </div>
+                    `).join('');
+                })
+                .catch(error => {
+                    document.getElementById('errorsList').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h2>Erreur de chargement</h2>
+                            <p>Impossible de charger les erreurs</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function loadDocumentation() {
+            const container = document.getElementById('errorDocumentation');
+            container.innerHTML = Object.entries(ERROR_DOCUMENTATION).map(([code, doc]) => `
+                <div class="error-doc-item">
+                    <div class="error-doc-code">${code}</div>
+                    <div class="error-doc-title">${doc.title}</div>
+                    <div class="error-doc-description">${doc.description}</div>
+                </div>
+            `).join('');
+        }
+
+        // Charger les erreurs au démarrage
+        loadErrors();
+
+        // Actualiser automatiquement toutes les 10 secondes
+        setInterval(() => {
+            loadErrors();
+        }, 10000);
+    </script>
+</body>
+
+</html>

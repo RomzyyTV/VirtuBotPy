@@ -19,6 +19,7 @@ CORS(app)
 
 bot_client = None
 command_logs = deque(maxlen=100)
+error_logs = deque(maxlen=100)
 
 CLIENT_ID = os.getenv('DISCORD_CLIENT_ID')
 CLIENT_SECRET = os.getenv('DISCORD_CLIENT_SECRET')
@@ -28,12 +29,28 @@ def set_bot_client(client):
     global bot_client
     bot_client = client
 
-def log_command(command_name, user_name, guild_name, guild_id=None):
+def log_command(command_name, user_name, guild_name, guild_id=None, parameters=None, channel_name=None):
+    """Log une commande avec tous ses détails"""
     command_logs.append({
         'command': command_name,
         'user': user_name,
         'guild': guild_name,
         'guild_id': str(guild_id) if guild_id else None,
+        'channel': channel_name,
+        'parameters': parameters or {},
+        'timestamp': datetime.now().isoformat(),
+        'status': 'success'
+    })
+
+def log_error(error_code, error_message, user_name, guild_name, command_name=None, details=None):
+    """Log une erreur avec un code d'erreur"""
+    error_logs.append({
+        'error_code': error_code,
+        'error_message': error_message,
+        'user': user_name,
+        'guild': guild_name,
+        'command': command_name,
+        'details': details,
         'timestamp': datetime.now().isoformat()
     })
 
@@ -221,6 +238,15 @@ def get_commands():
 @app.route('/api/logs', methods=['GET'])
 def get_logs():
     return jsonify(list(command_logs))
+
+@app.route('/api/errors', methods=['GET'])
+def get_errors():
+    return jsonify(list(error_logs))
+
+@app.route('/api/errors/clear', methods=['POST'])
+def clear_errors():
+    error_logs.clear()
+    return jsonify({'message': 'Errors cleared'})
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
