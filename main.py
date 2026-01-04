@@ -50,10 +50,20 @@ async def on_ready():
         print(f"{len(synced)} Commandes ont été chargées.")
     except Exception as e:
         print(e)
+    
+    # Démarrer l'API après que le bot soit prêt
+    try:
+        from api.main import start_api_thread
+        port = int(os.getenv('API_PORT', '3001'))
+        start_api_thread(bot, port)
+        print(f"✅ API démarrée sur http://localhost:{port}")
+    except Exception as e:
+        print(f"⚠️ Impossible de démarrer l'API: {e}")
 
 async def main():
     async with bot:
         await load_extensions()
+        
         BOT = os.getenv("DISCORD_TOKEN")
         if not BOT:
             print("❌ ERREUR: Variable DISCORD_TOKEN non définie!")

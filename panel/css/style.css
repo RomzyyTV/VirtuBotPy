@@ -641,3 +641,50 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--secondary-color);
 }
+/* Styles pour les paramètres du serveur */
+.setting-item {
+    margin-bottom: 20px;
+}
+
+.setting-item label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.setting-item input[type="text"],
+.setting-item select {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+.setting-item input[type="checkbox"] {
+    margin-right: 10px;
+    width: auto;
+}
+
+.setting-item small {
+    display: block;
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+}
+
+.btn-danger:hover {
+    background-color: #c73737;
+}
+
+.header-guild-icon {
+    display: flex;
+    align-items: center;
+}

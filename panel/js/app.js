@@ -48,18 +48,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadUserData() {
     const token = localStorage.getItem('discord_token');
-    const userStr = localStorage.getItem('discord_user');
     
-    if (!userStr) {
-        const response = await fetch('https://discord.com/api/users/@me', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!response.ok) throw new Error('Auth failed');
-        discordUser = await response.json();
-        localStorage.setItem('discord_user', JSON.stringify(discordUser));
-    } else {
-        discordUser = JSON.parse(userStr);
-    }
+    // Toujours recharger les données de l'utilisateur pour avoir l'avatar à jour
+    const response = await fetch('https://discord.com/api/users/@me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Auth failed');
+    discordUser = await response.json();
+    localStorage.setItem('discord_user', JSON.stringify(discordUser));
     
     const guildsResponse = await fetch('https://discord.com/api/users/@me/guilds', {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -127,23 +123,37 @@ async function loadDashboard() {
         if (discordUser) {
             userName.textContent = discordUser.username;
             if (discordUser.avatar) {
-                const avatarUrl = `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`;
+                // Détecter si l'avatar est animé (commence par a_)
+                const isAnimated = discordUser.avatar.startsWith('a_');
+                const extension = isAnimated ? 'gif' : 'png';
+                const avatarUrl = `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.${extension}?size=128`;
                 userAvatar.src = avatarUrl;
                 userAvatar.style.display = 'block';
+                userAvatar.style.cursor = 'pointer';
+                
+                // Ajouter l'événement click pour voir le profil
+                userAvatar.onclick = () => showUserProfile();
             }
         }
         
         const stats = await getBotStats();
         
-        // Filtrer les serveurs où l'utilisateur a les permissions admin
+        // Filtrer les serveurs où l'utilisateur a les permissions admin ET où le bot est présent
         const botGuilds = await getGuilds();
-        const adminGuilds = userGuilds.filter(userGuild => {
+        const adminGuilds = botGuilds.filter(botGuild => {
+            const userGuild = userGuilds.find(ug => ug.id === botGuild.id);
+            if (!userGuild) return false;
             const hasAdmin = (userGuild.permissions & 0x8) === 0x8; // Permission Administrator
-            return hasAdmin && botGuilds.some(botGuild => botGuild.id === userGuild.id);
+            return hasAdmin;
         });
         
+        const totalUserGuilds = userGuilds.length;
+        
         document.getElementById('adminGuildCount').textContent = adminGuilds.length;
-        document.getElementById('totalGuildCount').textContent = userGuilds.length;
+        const totalGuildCountElement = document.getElementById('totalGuildCount');
+        if (totalGuildCountElement) {
+            totalGuildCountElement.textContent = totalUserGuilds;
+        }
         document.getElementById('latency').textContent = stats.latency;
         
         try {
@@ -156,7 +166,33 @@ async function loadDashboard() {
         await checkBotStatus();
     } catch (error) {
         console.error('Erreur lors du chargement du dashboard:', error);
-        showError('Impossible de charger les statistiques du bot');
+        // Afficher quand même l'interface avec des valeurs par défaut
+        document.getElementById('adminGuildCount').textContent = '0';
+        const totalGuildCountElement = document.getElementById('totalGuildCount');
+        if (totalGuildCountElement) {
+            totalGuildCountElement.textContent = '0';
+        }
+        document.getElementById('latency').textContent = '?';
+        document.getElementById('commandCount').textContent = '?';
+        
+        // Afficher un message d'erreur moins intrusif
+        const dashboardPage = document.getElementById('dashboard-page');
+        if (dashboardPage && !document.querySelector('.error-banner')) {
+            const errorBanner = document.createElement('div');
+            errorBanner.className = 'error-banner';
+            errorBanner.style.cssText = 'background: #ED4245; color: white; padding: 1rem; border-radius: 8px; margin-top: 1rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem;';
+            errorBanner.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i> 
+                <span>Impossible de charger les statistiques du bot. Vérifiez que le bot est en ligne.</span>
+                <button onclick="location.reload()" style="margin-left: 1rem; background: white; color: #ED4245; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    <i class="fas fa-sync"></i> Réessayer
+                </button>
+            `;
+            const statsGrid = dashboardPage.querySelector('.stats-grid');
+            if (statsGrid) {
+                statsGrid.parentElement.insertBefore(errorBanner, statsGrid.nextSibling);
+            }
+        }
     }
 }
 
@@ -166,15 +202,24 @@ async function loadGuilds() {
     
     try {
         const guilds = await getGuilds();
-        currentGuilds = guilds;
         
-        if (guilds.length === 0) {
-            guildsList.innerHTML = '<p class="loading">Aucun serveur trouvé</p>';
+        // Filtrer pour afficher uniquement les serveurs où l'utilisateur est admin
+        const adminGuilds = guilds.filter(guild => {
+            const userGuild = userGuilds.find(ug => ug.id === guild.id);
+            if (!userGuild) return false;
+            const hasAdmin = (userGuild.permissions & 0x8) === 0x8; // Permission Administrator
+            return hasAdmin;
+        });
+        
+        currentGuilds = adminGuilds;
+        
+        if (adminGuilds.length === 0) {
+            guildsList.innerHTML = '<p class="loading">Aucun serveur trouvé où vous êtes administrateur</p>';
             return;
         }
         
         guildsList.innerHTML = '';
-        guilds.forEach(guild => {
+        adminGuilds.forEach(guild => {
             const guildCard = document.createElement('div');
             guildCard.className = 'guild-card';
             guildCard.onclick = () => {
@@ -257,4 +302,82 @@ function showSuccess(message) {
 
 function showError(message) {
     alert('❌ ' + message);
+}
+
+function showUserProfile() {
+    if (!discordUser) return;
+    
+    // Créer un modal pour afficher le profil
+    const modal = document.createElement('div');
+    modal.id = 'profileModal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    `;
+    
+    const isAnimated = discordUser.avatar && discordUser.avatar.startsWith('a_');
+    const extension = isAnimated ? 'gif' : 'png';
+    const avatarUrl = discordUser.avatar 
+        ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.${extension}?size=512`
+        : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    
+    modal.innerHTML = `
+        <div style="
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+        ">
+            <button onclick="this.closest('#profileModal').remove()" style="
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: var(--danger-color);
+                border: none;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 18px;
+            ">×</button>
+            <img src="${avatarUrl}" alt="Avatar" style="
+                width: 200px;
+                height: 200px;
+                border-radius: 50%;
+                margin-bottom: 1rem;
+                border: 4px solid var(--primary-color);
+            ">
+            <h2 style="color: var(--primary-color); margin-bottom: 0.5rem;">${discordUser.username}</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">ID: ${discordUser.id}</p>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                <i class="fas fa-calendar-alt"></i> Compte créé le: ${new Date(parseInt(discordUser.id) / 4194304 + 1420070400000).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
+            <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
+                <a href="https://discord.com/users/${discordUser.id}" target="_blank" class="btn btn-primary" style="text-decoration: none; display: inline-block;">
+                    <i class="fas fa-external-link-alt"></i> Voir sur Discord
+                </a>
+            </div>
+        </div>
+    `;
+    
+    // Fermer le modal en cliquant en dehors
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    };
+    
+    document.body.appendChild(modal);
 }

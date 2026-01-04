@@ -46,7 +46,8 @@
             </button>
             <div class="header-center">
                 <div class="guild-header" id="guildHeader">
-                    <img src="" alt="Guild Icon" id="guildIcon" style="display: none;">
+                    <img src="" alt="Guild Icon" id="guildIcon"
+                        style="display: none; width: 40px; height: 40px; border-radius: 50%; margin-right: 15px;">
                     <h2 id="guildName">Chargement...</h2>
                 </div>
             </div>
@@ -142,8 +143,60 @@
                 <h1>Paramètres du Serveur</h1>
                 <div class="settings-section">
                     <div class="setting-card">
-                        <h3>Configuration VirtuBot</h3>
-                        <p>Les paramètres du serveur seront disponibles prochainement.</p>
+                        <h3><i class="fas fa-cog"></i> Configuration Générale</h3>
+                        <div class="setting-item">
+                            <label>Préfixe des commandes</label>
+                            <input type="text" id="commandPrefix" placeholder="!" disabled>
+                            <small>Le préfixe pour les commandes du bot (fonctionnalité à venir)</small>
+                        </div>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3><i class="fas fa-bell"></i> Notifications</h3>
+                        <div class="setting-item">
+                            <label>Canal de logs</label>
+                            <select id="logChannel" disabled>
+                                <option>Sélectionner un canal...</option>
+                            </select>
+                            <small>Canal où seront envoyés les logs du bot (fonctionnalité à venir)</small>
+                        </div>
+                        <div class="setting-item">
+                            <label>Canal de bienvenue</label>
+                            <select id="welcomeChannel" disabled>
+                                <option>Sélectionner un canal...</option>
+                            </select>
+                            <small>Canal où seront envoyés les messages de bienvenue (fonctionnalité à venir)</small>
+                        </div>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3><i class="fas fa-shield-alt"></i> Modération</h3>
+                        <div class="setting-item">
+                            <label>
+                                <input type="checkbox" id="autoMod" disabled>
+                                Activer la modération automatique
+                            </label>
+                            <small>Détection automatique de spam et contenu inapproprié (fonctionnalité à venir)</small>
+                        </div>
+                        <div class="setting-item">
+                            <label>Rôle modérateur</label>
+                            <select id="modRole" disabled>
+                                <option>Sélectionner un rôle...</option>
+                            </select>
+                            <small>Rôle ayant accès aux commandes de modération (fonctionnalité à venir)</small>
+                        </div>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3><i class="fas fa-save"></i> Actions</h3>
+                        <button class="btn btn-primary" disabled>
+                            <i class="fas fa-save"></i> Sauvegarder les paramètres
+                        </button>
+                        <button class="btn btn-danger" disabled style="margin-left: 10px;">
+                            <i class="fas fa-undo"></i> Réinitialiser
+                        </button>
+                        <p style="margin-top: 1rem; opacity: 0.7;"><i class="fas fa-info-circle"></i> Les paramètres
+                            avancés seront disponibles dans une prochaine mise à jour</p>
                     </div>
                 </div>
             </div>
