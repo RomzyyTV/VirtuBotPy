@@ -272,6 +272,35 @@ Le bot chargera automatiquement tous les fichiers `.py` du dossier `cogs/`.
 
 ---
 
+## 🐛 Codes d'Erreur
+
+VirtuBot utilise un système de codes d'erreur pour faciliter le débogage. Voici la liste complète :
+
+### Codes d'Erreur Disponibles
+
+| Code                  | Description               | Gravité          | Solution                                                                                                          |
+| --------------------- | ------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **ERR_PERMS**         | Permissions Insuffisantes | 🔴 Critique      | L'utilisateur ou le bot n'a pas les permissions nécessaires. Vérifiez les rôles et permissions du serveur.        |
+| **ERR_ARGS**          | Argument Manquant         | 🟡 Avertissement | Une ou plusieurs valeurs requises n'ont pas été fournies. Consultez la documentation de la commande avec `/help`. |
+| **ERR_CMD_NOT_FOUND** | Commande Introuvable      | 🔵 Info          | La commande demandée n'existe pas. Utilisez `/help` pour voir les commandes disponibles.                          |
+| **ERR_COOLDOWN**      | Cooldown Actif            | 🟡 Avertissement | La commande a un temps de recharge. Attendez quelques secondes avant de réutiliser.                               |
+| **ERR_UNKNOWN**       | Erreur Inconnue           | 🔴 Critique      | Erreur inattendue. Vérifiez les logs du bot pour plus de détails.                                                 |
+| **ERR_API**           | Erreur API                | 🔴 Critique      | Impossible de communiquer avec l'API externe. Vérifiez la connexion internet et la configuration.                 |
+| **ERR_DB**            | Erreur Base de Données    | 🔴 Critique      | Impossible d'accéder ou modifier les données. Vérifiez les fichiers de configuration JSON.                        |
+| **ERR_TIMEOUT**       | Timeout                   | 🟡 Avertissement | L'opération a pris trop de temps et a été annulée. Réessayez plus tard.                                           |
+
+### Logs et Monitoring
+
+Le panel d'administration propose une page dédiée aux logs et erreurs :
+
+- **Logs des Commandes** : Historique détaillé de toutes les commandes exécutées avec leurs paramètres
+- **Erreurs Récentes** : Liste des erreurs avec codes, timestamps et contexte
+- **Documentation** : Guide de résolution pour chaque code d'erreur
+
+Accédez au panel via : `http://localhost:3001/errors.html`
+
+---
+
 ## 🤝 Contribuer
 
 Les contributions sont les bienvenues ! Voici comment vous pouvez aider :
