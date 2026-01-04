@@ -36,7 +36,8 @@ class Base(commands.Cog):
                 api_module.log_command(
                     interaction.command.name,
                     f"{interaction.user.name}#{interaction.user.discriminator}",
-                    interaction.guild.name if interaction.guild else "DM"
+                    interaction.guild.name if interaction.guild else "DM",
+                    interaction.guild.id if interaction.guild else None
                 )
             except:
                 pass
