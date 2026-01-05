@@ -49,3 +49,13 @@ async function getCommandLogs() {
 async function checkHealth() {
     return fetchAPI('/api/health');
 }
+
+async function getGuildBans(guildId) {
+    return fetchAPI(`/api/guilds/${guildId}/bans`);
+}
+
+async function unbanUser(guildId, userId) {
+    return fetchAPI(`/api/guilds/${guildId}/bans/${userId}`, {
+        method: 'DELETE'
+    });
+}

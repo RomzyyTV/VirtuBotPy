@@ -168,9 +168,83 @@ async function loadGuildOverview() {
             const createdDate = new Date(guildData.createdAt);
             document.getElementById('guildCreated').textContent = createdDate.toLocaleDateString('fr-FR');
         }
+        
+        // Charger les bans
+        await loadGuildBans();
     } catch (error) {
         console.error('Erreur lors du chargement du serveur:', error);
         alert('Erreur lors du chargement des informations du serveur');
+    }
+}
+
+async function loadGuildBans() {
+    const bansContainer = document.getElementById('bansContainer');
+    bansContainer.innerHTML = '<p class="loading">Chargement des bans...</p>';
+    
+    try {
+        const bans = await getGuildBans(currentGuildId);
+        
+        if (!bans || bans.length === 0) {
+            bansContainer.innerHTML = '<p class="loading">Aucun ban actif sur ce serveur</p>';
+            return;
+        }
+        
+        bansContainer.innerHTML = '';
+        const bansList = document.createElement('div');
+        bansList.className = 'bans-list';
+        bansList.style.display = 'grid';
+        bansList.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
+        bansList.style.gap = '1rem';
+        
+        bans.forEach(ban => {
+            const banItem = document.createElement('div');
+            banItem.className = 'ban-item';
+            banItem.style.padding = '1rem';
+            banItem.style.background = 'rgba(220, 38, 38, 0.1)';
+            banItem.style.border = '1px solid rgba(220, 38, 38, 0.3)';
+            banItem.style.borderRadius = '8px';
+            banItem.style.display = 'flex';
+            banItem.style.alignItems = 'center';
+            banItem.style.gap = '1rem';
+            banItem.style.justifyContent = 'space-between';
+            
+            const avatarUrl = ban.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+            
+            banItem.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden;">
+                        <img src="${avatarUrl}" alt="${ban.username}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; font-size: 1rem;">${ban.username}#${ban.discriminator}</h4>
+                        <p style="margin: 0; font-size: 0.85rem; opacity: 0.7;">${ban.reason}</p>
+                    </div>
+                </div>
+                <button class="btn btn-danger" onclick="handleUnban('${ban.user_id}', '${ban.username}')" style="white-space: nowrap;">
+                    <i class="fas fa-user-check"></i> Débannir
+                </button>
+            `;
+            bansList.appendChild(banItem);
+        });
+        
+        bansContainer.appendChild(bansList);
+    } catch (error) {
+        console.error('Erreur lors du chargement des bans:', error);
+        bansContainer.innerHTML = '<p class="loading">Erreur lors du chargement des bans</p>';
+    }
+}
+
+async function handleUnban(userId, username) {
+    if (!confirm(`Êtes-vous sûr de vouloir débannir ${username} ?`)) {
+        return;
+    }
+    
+    try {
+        await unbanUser(currentGuildId, userId);
+        alert(`${username} a été débanni avec succès`);
+        await loadGuildBans(); // Recharger la liste
+    } catch (error) {
+        alert(`Erreur lors du débannissement: ${error.message}`);
     }
 }
 
@@ -193,6 +267,18 @@ async function loadGuildLogs() {
         guildLogs.forEach(log => {
             const logItem = document.createElement('div');
             logItem.className = 'log-item';
+            
+            // Formater les paramètres de la commande
+            let parametersHtml = '';
+            if (log.parameters && Object.keys(log.parameters).length > 0) {
+                parametersHtml = '<div class="log-parameters" style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(255, 255, 255, 0.03); border-radius: 4px; font-size: 0.9rem;">';
+                parametersHtml += '<i class="fas fa-cog"></i> <strong>Paramètres:</strong><br>';
+                for (const [key, value] of Object.entries(log.parameters)) {
+                    parametersHtml += `<span style="margin-left: 1.5rem; opacity: 0.8;">• ${key}: <code style="background: rgba(255, 255, 255, 0.1); padding: 2px 6px; border-radius: 3px;">${value}</code></span><br>`;
+                }
+                parametersHtml += '</div>';
+            }
+            
             logItem.innerHTML = `
                 <div class="log-header">
                     <span class="log-command"><i class="fas fa-terminal"></i> /${log.command}</span>
@@ -200,7 +286,9 @@ async function loadGuildLogs() {
                 </div>
                 <div class="log-details">
                     <span><i class="fas fa-user"></i> ${log.user}</span>
+                    ${log.channel ? `<span style="margin-left: 1rem;"><i class="fas fa-hashtag"></i> ${log.channel}</span>` : ''}
                 </div>
+                ${parametersHtml}
             `;
             logsContainer.appendChild(logItem);
         });
@@ -317,6 +405,21 @@ async function loadGuildMembers() {
             memberItem.style.display = 'flex';
             memberItem.style.alignItems = 'center';
             memberItem.style.gap = '1rem';
+            memberItem.style.cursor = 'pointer';
+            memberItem.style.transition = 'all 0.2s ease';
+            
+            // Ajouter l'événement click
+            memberItem.onclick = () => showMemberDetails(member);
+            
+            // Hover effect
+            memberItem.onmouseenter = () => {
+                memberItem.style.background = 'rgba(255, 255, 255, 0.1)';
+                memberItem.style.transform = 'scale(1.02)';
+            };
+            memberItem.onmouseleave = () => {
+                memberItem.style.background = 'rgba(255, 255, 255, 0.05)';
+                memberItem.style.transform = 'scale(1)';
+            };
             
             memberItem.innerHTML = `
                 <div class="member-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: #5865f2; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; overflow: hidden;">
@@ -336,3 +439,107 @@ async function loadGuildMembers() {
         membersContainer.innerHTML = `<p class="loading">Erreur lors du chargement des membres: ${error.message}</p>`;
     }
 }
+
+function showMemberDetails(member) {
+    const memberName = member.username || member.name || 'Membre';
+    const avatarUrl = member.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+    
+    // Calculer la date de création du compte
+    const createdDate = member.createdAt ? new Date(member.createdAt) : new Date(parseInt(member.id) / 4194304 + 1420070400000);
+    const joinedDate = member.joinedAt ? new Date(member.joinedAt) : null;
+    
+    // Créer la modale
+    const modal = document.createElement('div');
+    modal.id = 'memberModal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        ">
+            <button onclick="this.closest('#memberModal').remove()" style="
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: var(--danger-color);
+                border: none;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 18px;
+            ">×</button>
+            
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <img src="${avatarUrl}" alt="Avatar" style="
+                    width: 120px;
+                    height: 120px;
+                    border-radius: 50%;
+                    margin-bottom: 1rem;
+                    border: 4px solid var(--primary-color);
+                ">
+                <h2 style="color: var(--primary-color); margin-bottom: 0.5rem;">${memberName}${member.bot ? ' <span style="background: #5865f2; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">BOT</span>' : ''}</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">${member.discriminator ? `#${member.discriminator}` : ''}</p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem;">ID: ${member.id}</p>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        <i class="fas fa-calendar-plus"></i> Compte créé le
+                    </p>
+                    <p style="margin: 0.25rem 0 0 0; font-weight: bold;">
+                        ${createdDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                </div>
+                
+                ${joinedDate ? `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+                        <i class="fas fa-sign-in-alt"></i> A rejoint le serveur le
+                    </p>
+                    <p style="margin: 0.25rem 0 0 0; font-weight: bold;">
+                        ${joinedDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                </div>
+                ` : ''}
+            </div>
+            
+
+            
+            <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
+                <a href="https://discord.com/users/${member.id}" target="_blank" class="btn btn-primary" style="text-decoration: none; display: inline-block;">
+                    <i class="fas fa-external-link-alt"></i> Voir sur Discord
+                </a>
+            </div>
+        </div>
+    `;
+    
+    // Fermer le modal en cliquant en dehors
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    };
+    
+    document.body.appendChild(modal);
+}
+
+

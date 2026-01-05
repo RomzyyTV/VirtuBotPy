@@ -205,11 +205,74 @@ def get_guild_members(guild_id):
                 'discriminator': member.discriminator,
                 'avatar': str(member.avatar.url) if member.avatar else None,
                 'bot': member.bot,
-                'joinedAt': member.joined_at.isoformat() if member.joined_at else None
+                'joinedAt': member.joined_at.isoformat() if member.joined_at else None,
+                'createdAt': member.created_at.isoformat() if member.created_at else None
             })
         return jsonify(members)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/guilds/<guild_id>/bans', methods=['GET'])
+def get_guild_bans(guild_id):
+    """Obtenir la liste des bans d'un serveur"""
+    if not bot_client or not bot_client.is_ready():
+        return jsonify({'error': 'Bot not ready'}), 503
+    
+    try:
+        guild = bot_client.get_guild(int(guild_id))
+        if not guild:
+            return jsonify({'error': 'Guild not found'}), 404
+        
+        # Fonction async pour récupérer les bans
+        async def fetch_bans():
+            ban_list = []
+            try:
+                async for ban_entry in guild.bans():
+                    ban_list.append({
+                        'user_id': str(ban_entry.user.id),
+                        'username': ban_entry.user.name,
+                        'discriminator': ban_entry.user.discriminator,
+                        'avatar': str(ban_entry.user.avatar.url) if ban_entry.user.avatar else None,
+                        'reason': ban_entry.reason or 'Aucune raison fournie'
+                    })
+            except Exception as e:
+                print(f"Erreur lors de la récupération des bans: {e}")
+                raise e
+            return ban_list
+        
+        # Utiliser asyncio avec la boucle existante du bot
+        import asyncio
+        future = asyncio.run_coroutine_threadsafe(fetch_bans(), bot_client.loop)
+        ban_list = future.result(timeout=10)
+        
+        return jsonify(ban_list)
+    except Exception as e:
+        print(f"Erreur API bans: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/guilds/<guild_id>/bans/<user_id>', methods=['DELETE'])
+def unban_user(guild_id, user_id):
+    """Retirer le ban d'un utilisateur"""
+    if not bot_client or not bot_client.is_ready():
+        return jsonify({'error': 'Bot not ready'}), 503
+    
+    try:
+        guild = bot_client.get_guild(int(guild_id))
+        if not guild:
+            return jsonify({'error': 'Guild not found'}), 404
+        
+        # Utiliser asyncio avec la boucle existante du bot
+        import asyncio
+        from discord import Object
+        future = asyncio.run_coroutine_threadsafe(guild.unban(Object(id=int(user_id))), bot_client.loop)
+        future.result(timeout=10)
+        
+        return jsonify({'success': True, 'message': f'Utilisateur {user_id} débanni avec succès'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
 
 @app.route('/api/bot/commands', methods=['GET'])
 def get_commands():
