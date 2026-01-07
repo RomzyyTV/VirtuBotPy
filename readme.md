@@ -20,6 +20,8 @@ _Fait par [Falous-dev](https://github.com/Falous-dev) _
 
 </div>
 
+# Ce readme Changera tres bientot !
+
 ## 📋 Description
 
 **VirtuBot** est un bot Discord complet et personnalisable écrit en Python, conçu pour enrichir votre serveur avec des fonctionnalités de modération, de divertissement, et bien plus encore.
@@ -220,9 +222,6 @@ VirtuBot/
 │   ├── ticket.py         # Système de tickets
 │   └── tool.py           # Utilitaires
 ├── requirements.txt       # Dépendances Python
-├── install.bat            # Script d'installation Windows
-├── install.ps1            # Script d'installation PowerShell
-├── install.sh             # Script d'installation Linux/Mac
 └── .env                  # Variables d'environnement (TOKEN)
 ```
 
@@ -243,7 +242,118 @@ Chaque serveur a sa propre configuration stockée avec son ID :
 
 ---
 
-## 🎨 Personnalisation
+## � Panel d'Administration Web
+
+VirtuBot dispose d'un panel web moderne pour gérer le bot à distance.
+
+### 🚀 Démarrage du Panel
+
+Le panel est une application web Flask accessible via navigateur :
+
+```bash
+# Lancer le panel (port 3001 par défaut)
+python api/main.py
+```
+
+Accédez ensuite au panel via : **http://localhost:3001**
+
+### ✨ Fonctionnalités du Panel
+
+#### 📊 Tableau de Bord Principal (`index.html`)
+
+- **Statistiques en temps réel** : Nombre de serveurs, utilisateurs, commandes exécutées
+- **État du bot** : Latence, uptime, version
+- **Graphiques** : Utilisation des commandes, activité par serveur
+- **Actions rapides** : Redémarrage, synchronisation des commandes
+
+#### 🔐 Authentification (`login.html`)
+
+- Connexion sécurisée avec identifiant Discord
+- Sessions persistantes
+- Protection contre les accès non autorisés
+
+#### 🖥️ Gestion des Serveurs (`serveur.html`)
+
+- Liste de tous les serveurs où le bot est présent
+- Configuration par serveur :
+  - Système de tickets
+  - Rôles de support
+  - Catégories et canaux
+  - Blacklist locale
+- Statistiques détaillées par serveur
+
+#### ⚠️ Logs et Erreurs (`errors.html`)
+
+- **Logs des Commandes** : Historique complet avec filtres
+- **Erreurs Récentes** : Codes d'erreur avec contexte
+- **Documentation** : Guide de résolution intégré
+- **Export** : Téléchargement des logs en JSON/CSV
+
+### 🔧 Configuration de l'API
+
+L'API Flask utilise les endpoints suivants :
+
+| Endpoint                   | Méthode | Description                          |
+| -------------------------- | ------- | ------------------------------------ |
+| `/api/stats`               | GET     | Récupère les statistiques globales   |
+| `/api/servers`             | GET     | Liste tous les serveurs              |
+| `/api/servers/<id>`        | GET     | Détails d'un serveur spécifique      |
+| `/api/servers/<id>/config` | PUT     | Met à jour la configuration          |
+| `/api/blacklist`           | GET     | Liste des utilisateurs blacklistés   |
+| `/api/blacklist/<id>`      | POST    | Ajoute un utilisateur à la blacklist |
+| `/api/logs`                | GET     | Récupère les logs avec filtres       |
+| `/api/commands/sync`       | POST    | Synchronise les commandes slash      |
+
+### 🛠️ Développement du Panel
+
+**Structure des fichiers :**
+
+```
+panel/
+├── index.html          # Tableau de bord principal
+├── login.html          # Page de connexion
+├── serveur.html        # Gestion des serveurs
+├── errors.html         # Logs et erreurs
+├── css/
+│   └── style.css      # Styles globaux (design moderne)
+└── js/
+    ├── api.js         # Client API (fetch, auth)
+    └── app.js         # Logique application (interactivité)
+    └── serveur.js     # Gestion serveurs (filtres, édition)
+```
+
+**Technologies utilisées :**
+
+- **Backend** : Flask (Python) avec CORS
+- **Frontend** : HTML5, CSS3, JavaScript vanilla
+- **Design** : Interface moderne avec thème sombre/clair
+- **API** : REST avec JSON
+
+### 🔒 Sécurité
+
+- ⚠️ **Par défaut** : Le panel est accessible localement uniquement (`localhost:3001`)
+- 🌐 **Production** : Configurez un reverse proxy (Nginx) avec HTTPS
+- 🔑 **Authentification** : Implémentez OAuth2 Discord pour sécuriser l'accès
+- 🛡️ **CORS** : Configurez les origines autorisées dans `api/main.py`
+
+### 📝 Exemple de Configuration
+
+```python
+# api/main.py
+from flask import Flask
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)  # À configurer pour la production
+
+# Port personnalisé
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=3001, debug=True)
+```
+
+---
+
+## �🎨 Personnalisation
 
 ### Ajouter un nouveau module (Cog)
 
@@ -327,6 +437,8 @@ Les contributions sont les bienvenues ! Voici comment vous pouvez aider :
 ### 🌟 Créé par
 
 **[Falous-dev](https://github.com/Falous-dev)**
+
+**[HDM](https://github.com/HdmDEV)**
 
 ### 💡 Remerciements spéciaux
 
