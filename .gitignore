@@ -1,9 +1,8 @@
 .env
 /__pycache__
 /cogs/__pycache__
-test.txt
 config.json
-Todolist
+todolist.txt
 
 tickets_config.json
 
@@ -12,4 +11,6 @@ tickets_data.json
 install.bat
 
 /api
+
+
 
