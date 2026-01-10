@@ -3,7 +3,7 @@
 /cogs/__pycache__
 config.json
 todolist.txt
-
+/config
 tickets_config.json
 
 tickets_data.json
