@@ -446,6 +446,6 @@ Merci à tous ceux qui contribuent à rendre **VirtuBot** meilleur chaque jour !
 
 ---
 
-<sub>Made with ❤️ and Python | © 2025 VirtuBot</sub>
+<sub>Made with ❤️ and Python | © 2026 VirtuBot Teams</sub>
 
 </div>
