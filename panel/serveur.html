@@ -28,8 +28,20 @@
             <a href="#" class="nav-item" data-page="logs">
                 <i class="fas fa-file-alt"></i> Logs
             </a>
+            <a href="#" class="nav-item" data-page="bans">
+                <i class="fas fa-hammer"></i> Bans
+            </a>
             <a href="#" class="nav-item" data-page="members">
                 <i class="fas fa-users"></i> Membres
+            </a>
+            <a href="#" class="nav-item" data-page="blacklist">
+                <i class="fas fa-ban"></i> Blacklist
+            </a>
+            <a href="#" class="nav-item" data-page="warns">
+                <i class="fas fa-exclamation-triangle"></i> Avertissements
+            </a>
+            <a href="#" class="nav-item" data-page="tickets">
+                <i class="fas fa-ticket-alt"></i> Tickets
             </a>
             <a href="#" class="nav-item" data-page="settings">
                 <i class="fas fa-cog"></i> Paramètres
@@ -116,9 +128,16 @@
                 </div>
 
                 <div class="info-section">
-                    <h3><i class="fas fa-ban"></i> Bans du Serveur</h3>
-                    <div class="bans-container" id="bansContainer">
-                        <p class="loading">Chargement des bans...</p>
+                    <h3><i class="fas fa-user-plus"></i> Nouveaux Membres (7 derniers jours)</h3>
+                    <div class="new-members-container" id="newMembersContainer">
+                        <p class="loading">Chargement...</p>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3><i class="fas fa-hammer"></i> Bans Récents (7 derniers jours)</h3>
+                    <div class="recent-bans-container" id="recentBansContainer">
+                        <p class="loading">Chargement...</p>
                     </div>
                 </div>
             </div>
@@ -127,13 +146,103 @@
             <div class="page" id="logs-page">
                 <h1>Logs des Commandes</h1>
                 <div class="logs-filters">
-                    <input type="text" id="logSearch" placeholder="Rechercher...">
+                    <input type="text" id="logSearch" placeholder="Rechercher..." onkeyup="filterLogs()">
+                    <select id="logTypeFilter" onchange="filterLogs()"
+                        style="padding: 10px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color);">
+                        <option value="all">Tous les logs</option>
+                        <option value="commands">Commandes uniquement</option>
+                        <option value="errors">Erreurs uniquement</option>
+                    </select>
                     <button class="btn btn-primary" onclick="loadGuildLogs()">
                         <i class="fas fa-sync"></i> Actualiser
                     </button>
+                    <button class="btn btn-success" onclick="downloadGuildLogs()">
+                        <i class="fas fa-download"></i> Télécharger
+                    </button>
+                </div>
+                <div class="logs-stats"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div
+                        style="background: var(--card-bg); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem;">Total
+                            Commandes</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);"
+                            id="totalCommandsCount">0</div>
+                    </div>
+                    <div
+                        style="background: var(--card-bg); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem;">
+                            Aujourd'hui</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #10B981;" id="todayCommandsCount">0
+                        </div>
+                    </div>
+                    <div
+                        style="background: var(--card-bg); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem;">Erreurs
+                        </div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #EF4444;" id="errorsCount">0</div>
+                    </div>
+                    <div
+                        style="background: var(--card-bg); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.5rem;">
+                            Utilisateurs actifs</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #F59E0B;" id="activeUsersCount">0</div>
+                    </div>
                 </div>
                 <div class="logs-container" id="logsContainer">
                     <p class="loading">Chargement des logs...</p>
+                </div>
+            </div>
+
+
+            <div class="page" id="bans-page">
+                <h1>Gestion des Bans</h1>
+
+                <div class="ban-controls"
+                    style="margin-bottom: 2rem; background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <h3
+                        style="margin-bottom: 1.5rem; color: var(--primary-color); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-user-plus"></i> Ajouter un ban
+                    </h3>
+                    <div style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 1rem; align-items: end;">
+                        <div>
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500;">
+                                <i class="fas fa-id-card"></i> ID de l'utilisateur
+                            </label>
+                            <input type="text" id="banUserId" placeholder="123456789012345678"
+                                style="width: 100%; padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 1rem; transition: all 0.3s ease;">
+                        </div>
+                        <div>
+                            <label
+                                style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-weight: 500;">
+                                <i class="fas fa-comment"></i> Raison du bannissement
+                            </label>
+                            <input type="text" id="banReason" placeholder="Spam, comportement inapproprié, etc."
+                                style="width: 100%; padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 1rem; transition: all 0.3s ease;">
+                        </div>
+                        <button class="btn btn-danger" onclick="addBan()"
+                            style="padding: 0.75rem 1.5rem; white-space: nowrap; height: fit-content;">
+                            <i class="fas fa-hammer"></i> Bannir
+                        </button>
+                    </div>
+                    <p
+                        style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-info-circle"></i> L'utilisateur sera immédiatement banni du serveur s'il y est
+                        présent.
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="color: var(--primary-color); display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-list"></i> Bans actifs
+                    </h3>
+                    <button class="btn btn-primary" onclick="loadGuildBans()" style="padding: 0.5rem 1rem;">
+                        <i class="fas fa-sync"></i> Actualiser
+                    </button>
+                </div>
+                <div class="bans-container" id="bansContainer">
+                    <p class="loading">Chargement des bans...</p>
                 </div>
             </div>
 
@@ -146,6 +255,33 @@
             </div>
 
 
+            <div class="page" id="blacklist-page">
+                <h1>Blacklist du Serveur</h1>
+                <div class="blacklist-controls"
+                    style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">ID de
+                            l'utilisateur</label>
+                        <input type="text" id="blacklistUserId" placeholder="123456789012345678"
+                            style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                    </div>
+                    <div style="flex: 2;">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Raison</label>
+                        <input type="text" id="blacklistReason" placeholder="Raison du bannissement..."
+                            style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                    </div>
+                    <button class="btn btn-danger" onclick="addToBlacklist()"
+                        style="padding: 0.75rem 1.5rem; white-space: nowrap;">
+                        <i class="fas fa-ban"></i> Ajouter à la blacklist
+                    </button>
+                </div>
+                <div class="blacklist-container" id="blacklistContainer">
+                    <p class="loading">Chargement de la blacklist...</p>
+                </div>
+            </div>
+
+
             <div class="page" id="settings-page">
                 <h1>Paramètres du Serveur</h1>
                 <div class="settings-section">
@@ -153,8 +289,18 @@
                         <h3><i class="fas fa-cog"></i> Configuration Générale</h3>
                         <div class="setting-item">
                             <label>Préfixe des commandes</label>
-                            <input type="text" id="commandPrefix" placeholder="!" disabled>
-                            <small>Le préfixe pour les commandes du bot (fonctionnalité à venir)</small>
+                            <input type="text" id="commandPrefix" placeholder="!" maxlength="5">
+                            <small>Le préfixe pour les commandes du bot (1-5 caractères)</small>
+                        </div>
+                        <div class="setting-item">
+                            <label>Langue</label>
+                            <select id="languageSetting">
+                                <option value="fr">Français</option>
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                                <option value="de">Deutsch</option>
+                            </select>
+                            <small>Langue utilisée par le bot pour ce serveur</small>
                         </div>
                     </div>
 
@@ -162,17 +308,17 @@
                         <h3><i class="fas fa-bell"></i> Notifications</h3>
                         <div class="setting-item">
                             <label>Canal de logs</label>
-                            <select id="logChannel" disabled>
-                                <option>Sélectionner un canal...</option>
+                            <select id="logChannel">
+                                <option value="">Sélectionner un canal...</option>
                             </select>
-                            <small>Canal où seront envoyés les logs du bot (fonctionnalité à venir)</small>
+                            <small>Canal où seront envoyés les logs du bot</small>
                         </div>
                         <div class="setting-item">
                             <label>Canal de bienvenue</label>
-                            <select id="welcomeChannel" disabled>
-                                <option>Sélectionner un canal...</option>
+                            <select id="welcomeChannel">
+                                <option value="">Sélectionner un canal...</option>
                             </select>
-                            <small>Canal où seront envoyés les messages de bienvenue (fonctionnalité à venir)</small>
+                            <small>Canal où seront envoyés les messages de bienvenue</small>
                         </div>
                     </div>
 
@@ -180,35 +326,453 @@
                         <h3><i class="fas fa-shield-alt"></i> Modération</h3>
                         <div class="setting-item">
                             <label>
-                                <input type="checkbox" id="autoMod" disabled>
+                                <input type="checkbox" id="autoMod">
                                 Activer la modération automatique
                             </label>
                             <small>Détection automatique de spam et contenu inapproprié (fonctionnalité à venir)</small>
                         </div>
                         <div class="setting-item">
                             <label>Rôle modérateur</label>
-                            <select id="modRole" disabled>
-                                <option>Sélectionner un rôle...</option>
+                            <select id="modRole">
+                                <option value="">Sélectionner un rôle...</option>
                             </select>
-                            <small>Rôle ayant accès aux commandes de modération (fonctionnalité à venir)</small>
+                            <small>Rôle ayant accès aux commandes de modération</small>
                         </div>
                     </div>
 
                     <div class="setting-card">
                         <h3><i class="fas fa-save"></i> Actions</h3>
-                        <button class="btn btn-primary" disabled>
+                        <button class="btn btn-primary" onclick="saveGuildSettings()">
                             <i class="fas fa-save"></i> Sauvegarder les paramètres
                         </button>
-                        <button class="btn btn-danger" disabled style="margin-left: 10px;">
+                        <button class="btn btn-danger" onclick="resetGuildSettings()" style="margin-left: 10px;">
                             <i class="fas fa-undo"></i> Réinitialiser
                         </button>
-                        <p style="margin-top: 1rem; opacity: 0.7;"><i class="fas fa-info-circle"></i> Les paramètres
-                            avancés seront disponibles dans une prochaine mise à jour</p>
+                        <p id="settingsSaveStatus" style="margin-top: 1rem; opacity: 0.7;"></p>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="page" id="warns-page">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h1 style="margin: 0; display: flex; align-items: center; gap: 1rem;">
+                        <div
+                            style="width: 48px; height: 48px; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem;"></i>
+                        </div>
+                        Gestion des Avertissements
+                    </h1>
+                    <button onclick="loadWarnsPage()" class="btn btn-primary"
+                        style="border-radius: 10px; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); border: none; box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);">
+                        <i class="fas fa-sync-alt"></i> Actualiser
+                    </button>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom: 2rem;">
+                    <div class="stat-card"
+                        style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%); border: 1px solid rgba(239, 68, 68, 0.2); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);">
+                        <div class="stat-icon"
+                            style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalWarns" style="color: #EF4444; font-size: 2rem;">0</h3>
+                            <p style="opacity: 0.8;">Total Avertissements</p>
+                        </div>
+                    </div>
+                    <div class="stat-card"
+                        style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.05) 100%); border: 1px solid rgba(245, 158, 11, 0.2); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);">
+                        <div class="stat-icon"
+                            style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalWarnedUsers" style="color: #F59E0B; font-size: 2rem;">0</h3>
+                            <p style="opacity: 0.8;">Membres Avertis</p>
+                        </div>
+                    </div>
+                    <div class="stat-card"
+                        style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%); border: 1px solid rgba(139, 92, 246, 0.2); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);">
+                        <div class="stat-icon"
+                            style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="warnsToday" style="color: #8B5CF6; font-size: 2rem;">0</h3>
+                            <p style="opacity: 0.8;">Aujourd'hui</p>
+                        </div>
+                    </div>
+                    <div class="stat-card"
+                        style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%); border: 1px solid rgba(16, 185, 129, 0.2); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);">
+                        <div class="stat-icon"
+                            style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="topWarned" style="color: #10B981; font-size: 1.25rem; font-weight: 600;">-</h3>
+                            <p style="opacity: 0.8;">Plus Averti</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card"
+                    style="margin-bottom: 2rem; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <div class="card-header"
+                        style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(79, 70, 229, 0.05) 100%); border-bottom: 2px solid rgba(99, 102, 241, 0.2); border-radius: 16px 16px 0 0;">
+                        <i class="fas fa-filter"></i> Filtres et Recherche
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group"
+                            style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: end;">
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;"><i
+                                        class="fas fa-search"></i> Rechercher un membre</label>
+                                <input type="text" id="warnSearchUser" class="form-control"
+                                    placeholder="Nom ou ID du membre"
+                                    style="border-radius: 10px; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1);">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;"><i
+                                        class="fas fa-sort-amount-down"></i> Trier par</label>
+                                <select id="warnSort" class="form-control"
+                                    style="border-radius: 10px; padding: 0.75rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1);">
+                                    <option value="recent">Plus récents</option>
+                                    <option value="oldest">Plus anciens</option>
+                                    <option value="most">Plus d'avertissements</option>
+                                </select>
+                            </div>
+                            <div>
+                                <button class="btn btn-primary" onclick="filterWarns()"
+                                    style="width: 100%; padding: 0.75rem 1.5rem; border-radius: 10px; background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); border: none; box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3); font-weight: 500;">
+                                    <i class="fas fa-search"></i> Filtrer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card"
+                    style="margin-bottom: 2rem; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <div class="card-header"
+                        style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%); border-bottom: 2px solid rgba(139, 92, 246, 0.2); border-radius: 16px 16px 0 0;">
+                        <i class="fas fa-cogs"></i> Configuration des Actions Automatiques
+                    </div>
+                    <div class="card-body">
+                        <div
+                            style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; border-left: 4px solid #6366F1;">
+                            <p style="margin: 0; opacity: 0.9; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-info-circle" style="color: #6366F1; font-size: 1.25rem;"></i>
+                                <span>Définissez les actions à effectuer automatiquement lorsqu'un membre atteint un
+                                    certain nombre d'avertissements.</span>
+                            </p>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <button class="btn btn-success" onclick="addWarnRule()"
+                                style="width: 100%; padding: 0.75rem; font-size: 1rem; border-radius: 12px; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border: none; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);">
+                                <i class="fas fa-plus"></i> Ajouter une règle automatique
+                            </button>
+                        </div>
+
+                        <div id="warnRulesList" style="display: grid; gap: 1rem;"></div>
+
+                        <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                            <button class="btn btn-primary" onclick="saveWarnConfig()"
+                                style="flex: 1; padding: 0.75rem; font-size: 1rem; border-radius: 12px; background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); border: none; box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);">
+                                <i class="fas fa-save"></i> Sauvegarder la configuration
+                            </button>
+                            <button class="btn btn-secondary" onclick="loadWarnConfig()"
+                                style="padding: 0.75rem; border-radius: 12px; border: 2px solid rgba(255,255,255,0.1);">
+                                <i class="fas fa-undo"></i> Annuler
+                            </button>
+                        </div>
+                        <p id="warnConfigStatus"
+                            style="margin-top: 1rem; opacity: 0.7; font-weight: 500; text-align: center;"></p>
+                    </div>
+                </div>
+
+                <div class="card"
+                    style="margin-bottom: 2rem; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <div class="card-header"
+                        style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%); border-bottom: 2px solid rgba(16, 185, 129, 0.2); border-radius: 16px 16px 0 0;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div
+                                style="width: 40px; height: 40px; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);">
+                                <i class="fas fa-plus-circle" style="font-size: 1.2rem;"></i>
+                            </div>
+                            <span style="font-weight: 600; font-size: 1.1rem;">Ajouter un Avertissement</span>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 2rem;">
+                        <div
+                            style="display: grid; grid-template-columns: 200px 1fr auto; gap: 1.25rem; align-items: end;">
+                            <div>
+                                <label
+                                    style="display: block; margin-bottom: 0.75rem; font-weight: 600; opacity: 0.9; font-size: 0.95rem;">
+                                    <i class="fas fa-id-card" style="color: #10B981; margin-right: 0.5rem;"></i>ID du
+                                    Membre
+                                </label>
+                                <input type="text" id="newWarnUserId" class="form-control"
+                                    placeholder="Ex: 123456789..."
+                                    style="border-radius: 12px; padding: 0.85rem 1rem; background: rgba(0,0,0,0.3); border: 2px solid rgba(16, 185, 129, 0.2); font-family: 'Courier New', monospace; font-size: 0.95rem; transition: all 0.3s ease;"
+                                    onfocus="this.style.borderColor='rgba(16, 185, 129, 0.5)'; this.style.background='rgba(0,0,0,0.4)'"
+                                    onblur="this.style.borderColor='rgba(16, 185, 129, 0.2)'; this.style.background='rgba(0,0,0,0.3)'">
+                            </div>
+                            <div>
+                                <label
+                                    style="display: block; margin-bottom: 0.75rem; font-weight: 600; opacity: 0.9; font-size: 0.95rem;">
+                                    <i class="fas fa-edit" style="color: #10B981; margin-right: 0.5rem;"></i>Raison de
+                                    l'Avertissement
+                                </label>
+                                <input type="text" id="newWarnReason" class="form-control"
+                                    placeholder="Ex: Spam dans le chat général..."
+                                    style="border-radius: 12px; padding: 0.85rem 1rem; background: rgba(0,0,0,0.3); border: 2px solid rgba(16, 185, 129, 0.2); font-size: 0.95rem; transition: all 0.3s ease;"
+                                    onfocus="this.style.borderColor='rgba(16, 185, 129, 0.5)'; this.style.background='rgba(0,0,0,0.4)'"
+                                    onblur="this.style.borderColor='rgba(16, 185, 129, 0.2)'; this.style.background='rgba(0,0,0,0.3)'">
+                            </div>
+                            <div>
+                                <button class="btn btn-success" onclick="addNewWarn()"
+                                    style="padding: 0.85rem 2rem; border-radius: 12px; background: linear-gradient(135deg, #10B981 0%, #059669 100%); border: none; box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4); font-weight: 600; font-size: 1rem; white-space: nowrap; transition: all 0.3s ease; cursor: pointer;"
+                                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(16, 185, 129, 0.5)'"
+                                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 12px rgba(16, 185, 129, 0.4)'">
+                                    <i class="fas fa-plus" style="margin-right: 0.5rem;"></i>Ajouter
+                                </button>
+                            </div>
+                        </div>
+                        <div id="addWarnStatus"
+                            style="margin-top: 1.5rem; padding: 1rem; border-radius: 10px; text-align: center; font-weight: 500; font-size: 0.95rem; display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <div class="card-header"
+                        style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%); border-bottom: 2px solid rgba(239, 68, 68, 0.2); border-radius: 16px 16px 0 0;">
+                        <span style="font-weight: 600; font-size: 1.1rem;"><i class="fas fa-list"></i> Liste des
+                            Avertissements</span>
+                        <button class="btn btn-secondary" onclick="loadWarns()"
+                            style="border-radius: 8px; padding: 0.5rem 1rem; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1);">
+                            <i class="fas fa-sync-alt"></i> Actualiser
+                        </button>
+                    </div>
+                    <div class="card-body" style="padding: 1.5rem;">
+                        <div id="warnsList">
+                            <div style="text-align: center; padding: 3rem; opacity: 0.7;">
+                                <i class="fas fa-spinner fa-spin"
+                                    style="font-size: 3rem; margin-bottom: 1rem; color: #6366F1;"></i>
+                                <p>Chargement des avertissements...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Warns -->
+            <div class="page" id="warns-page">
+                <h1>Avertissements du Serveur</h1>
+
+                <!-- Formulaire d'ajout -->
+                <div class="blacklist-controls"
+                    style="margin-bottom: 2rem; display: flex; gap: 1rem; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">ID du
+                            membre</label>
+                        <input type="text" id="newWarnUserId" placeholder="123456789012345678"
+                            style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                    </div>
+                    <div style="flex: 2;">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">Raison</label>
+                        <input type="text" id="newWarnReason" placeholder="Raison de l'avertissement..."
+                            style="width: 100%; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                    </div>
+                    <button class="btn btn-primary" onclick="addNewWarn()"
+                        style="padding: 0.75rem 1.5rem; white-space: nowrap;">
+                        <i class="fas fa-exclamation-triangle"></i> Avertir
+                    </button>
+                </div>
+
+                <!-- Message de statut -->
+                <div id="addWarnStatus" style="margin-bottom: 1rem; padding: 1rem; border-radius: 8px; display: none;">
+                </div>
+
+                <!-- Configuration des auto-sanctions -->
+                <div
+                    style="background: rgba(255, 255, 255, 0.03); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                    <h3 style="margin-top: 0;"><i class="fas fa-cogs"></i> Actions Automatiques</h3>
+                    <p style="opacity: 0.7; margin-bottom: 1rem;">Définissez les sanctions automatiques selon le nombre
+                        de warns</p>
+
+                    <button class="btn btn-success" onclick="addWarnRule()" style="margin-bottom: 1rem;">
+                        <i class="fas fa-plus"></i> Ajouter une règle
+                    </button>
+
+                    <div id="warnRulesList" style="display: grid; gap: 1rem; margin-bottom: 1rem;"></div>
+
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="saveWarnConfig()">
+                            <i class="fas fa-save"></i> Sauvegarder
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadWarnConfig()">
+                            <i class="fas fa-undo"></i> Annuler
+                        </button>
+                    </div>
+                    <p id="warnConfigStatus" style="margin-top: 1rem; opacity: 0.7;"></p>
+                </div>
+
+                <!-- Liste des warns -->
+                <div class="warns-container" id="warnsList">
+                    <p class="loading">Chargement des avertissements...</p>
+                </div>
+            </div>
+
+
+            <div class="page" id="tickets-page">
+                <h1><i class="fas fa-ticket-alt"></i> Gestion des Tickets</h1>
+
+                <div class="stats-grid" style="margin-bottom: 2rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%);">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalTickets">0</h3>
+                            <p>Total Tickets</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="openTickets">0</h3>
+                            <p>Tickets Ouverts</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="closedTickets">0</h3>
+                            <p>Tickets Fermés</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);">
+                            <i class="fas fa-user-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="avgResponseTime">-</h3>
+                            <p>Temps Moyen</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-section"
+                    style="background: var(--card-bg); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; border: 2px solid var(--border-color);">
+                    <h2
+                        style="margin: 0 0 1.5rem 0; color: var(--text-color); display: flex; align-items: center; gap: 0.75rem;">
+                        <i class="fas fa-cog"></i> Configuration des Tickets
+                    </h2>
+
+                    <div
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <div class="setting-item">
+                            <label><i class="fas fa-hashtag"></i> Canal pour créer les tickets</label>
+                            <select id="ticketChannel"
+                                style="width: 100%; padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color);">
+                                <option value="">Sélectionner un canal...</option>
+                            </select>
+                            <small>Canal où le bouton de création de ticket sera affiché</small>
+                        </div>
+
+                        <div class="setting-item">
+                            <label><i class="fas fa-folder"></i> Catégorie des tickets actifs</label>
+                            <select id="ticketCategory"
+                                style="width: 100%; padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color);">
+                                <option value="">Sélectionner une catégorie...</option>
+                            </select>
+                            <small>Catégorie où les tickets seront créés</small>
+                        </div>
+
+                        <div class="setting-item">
+                            <label><i class="fas fa-archive"></i> Catégorie d'archivage</label>
+                            <select id="archiveCategory"
+                                style="width: 100%; padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color);">
+                                <option value="">Sélectionner une catégorie...</option>
+                            </select>
+                            <small>Catégorie où les tickets fermés seront archivés</small>
+                        </div>
+
+                        <div class="setting-item">
+                            <label><i class="fas fa-user-shield"></i> Rôles Support</label>
+                            <select id="supportRoles" multiple
+                                style="width: 100%; padding: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); min-height: 100px;">
+                            </select>
+                            <small>Rôles ayant accès aux tickets (maintenir Ctrl pour sélectionner plusieurs)</small>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="saveTicketConfig()">
+                            <i class="fas fa-save"></i> Sauvegarder la configuration
+                        </button>
+                        <button class="btn btn-success" onclick="sendTicketPanel()">
+                            <i class="fas fa-paper-plane"></i> Envoyer le panel de tickets
+                        </button>
+                        <button class="btn btn-warning" onclick="refreshTicketStats()">
+                            <i class="fas fa-sync"></i> Actualiser les stats
+                        </button>
+                    </div>
+                    <p id="ticketConfigStatus" style="margin-top: 1rem; color: var(--text-secondary);"></p>
+                </div>
+
+                <div class="admin-section"
+                    style="background: var(--card-bg); padding: 2rem; border-radius: 12px; border: 2px solid var(--border-color);">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; color: var(--text-color); display: flex; align-items: center; gap: 0.75rem;">
+                            <i class="fas fa-list"></i> Tickets Récents
+                        </h2>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <select id="ticketStatusFilter" onchange="filterTickets()"
+                                style="padding: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-color);">
+                                <option value="all">📋 Tous statuts</option>
+                                <option value="open">🔓 Ouverts</option>
+                                <option value="closed">✅ Fermés</option>
+                            </select>
+                            <select id="ticketPriorityFilter" onchange="filterTickets()"
+                                style="padding: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-color);">
+                                <option value="all">⚡ Toutes priorités</option>
+                                <option value="urgent">🔴 Urgent</option>
+                                <option value="high">🔶 Élevé</option>
+                                <option value="normal">🟢 Normal</option>
+                                <option value="low">🔵 Faible</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="loadTicketsList()" style="padding: 0.5rem 1rem;">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="ticketsListContainer">
+                        <p class="loading">Chargement des tickets...</p>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+
+    <footer
+        style="position: fixed; bottom: 0; width: 100%; background: rgba(0, 0, 0, 0.3); padding: 0.75rem; text-align: center; backdrop-filter: blur(10px); border-top: 1px solid rgba(255, 255, 255, 0.1); z-index: 1000;">
+        <p style="margin: 0; font-size: 0.9rem; color: rgba(255, 255, 255, 0.7);">
+            <strong
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">VirtuBot</strong>
+        </p>
+    </footer>
 
     <script src="js/api.js"></script>
     <script src="js/serveur.js"></script>
