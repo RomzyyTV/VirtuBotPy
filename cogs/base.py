@@ -34,7 +34,6 @@ class Base(commands.Cog):
             try:
                 from api import main as api_module
                 
-                # Récupérer les paramètres de la commande
                 params = {}
                 if hasattr(interaction, 'namespace'):
                     for key, value in interaction.namespace.__dict__.items():

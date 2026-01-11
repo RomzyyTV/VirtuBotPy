@@ -5,7 +5,6 @@ class Tool(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        #Commande pour faire répéter un texte.
         @bot.tree.command(name="say", description="Fait répéter un texte")
         async def say(interaction: discord.Interaction, messages: str):
             if not interaction.user.guild_permissions.manage_messages:
@@ -14,7 +13,6 @@ class Tool(commands.Cog):
                 print(f"{interaction.user} a utilisé la commande /say et a dis : {messages}")
                 await interaction.response.send_message(messages)
 
-        #Commande pour faire répéter un texte sous forme d'embed.
         @bot.tree.command(name="sayembed", description="Fait répéter un texte sous forme d'embed configurable")
         async def sayembed(
             interaction: discord.Interaction, 
@@ -82,7 +80,6 @@ class Tool(commands.Cog):
             print(f"{interaction.user} a utilisé la commande /sayembed avec le titre : {titre}")
             await interaction.response.send_message(embed=embed)
 
-        #Commande pour créer une annonce de partenariat.
         @bot.tree.command(name="partenariats", description="Crée une annonce de partenariat")
         async def partenariats(
             interaction: discord.Interaction,

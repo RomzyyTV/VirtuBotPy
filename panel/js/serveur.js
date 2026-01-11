@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    // Récupérer l'ID du serveur depuis l'URL
     const urlParams = new URLSearchParams(window.location.search);
     currentGuildId = urlParams.get('guild');
     
@@ -62,7 +61,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadUserData() {
     const token = localStorage.getItem('discord_token');
     
-    // Toujours recharger les données de l'utilisateur pour avoir l'avatar à jour
     const response = await fetch('https://discord.com/api/users/@me', {
         headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -70,14 +68,12 @@ async function loadUserData() {
     discordUser = await response.json();
     localStorage.setItem('discord_user', JSON.stringify(discordUser));
     
-    // Afficher l'utilisateur dans le header
     const userAvatar = document.getElementById('userAvatar');
     const userName = document.getElementById('userName');
     
     if (discordUser) {
         userName.textContent = discordUser.username;
         if (discordUser.avatar) {
-            // Détecter si l'avatar est animé (commence par a_)
             const isAnimated = discordUser.avatar.startsWith('a_');
             const extension = isAnimated ? 'gif' : 'png';
             const avatarUrl = `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.${extension}?size=128`;
@@ -85,7 +81,6 @@ async function loadUserData() {
             userAvatar.style.display = 'block';
             userAvatar.style.cursor = 'pointer';
             
-            // Ajouter l'événement click pour voir le profil
             userAvatar.onclick = () => showUserProfile();
         }
     }
@@ -160,7 +155,6 @@ async function loadGuildOverview() {
     try {
         guildData = await getGuildDetails(currentGuildId);
         
-        // Afficher les informations du serveur dans le header
         const guildName = document.getElementById('guildName');
         const guildIcon = document.getElementById('guildIcon');
         
@@ -170,11 +164,9 @@ async function loadGuildOverview() {
             guildIcon.style.display = 'block';
         }
         
-        // Calculer les nouveaux éléments des 7 derniers jours
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         
-        // Compter les nouveaux membres
         let newMembersCount = 0;
         if (guildData.members) {
             newMembersCount = guildData.members.filter(m => {
@@ -183,7 +175,6 @@ async function loadGuildOverview() {
             }).length;
         }
         
-        // Compter les nouveaux salons
         let newChannelsCount = 0;
         if (guildData.channels) {
             newChannelsCount = guildData.channels.filter(c => {
@@ -192,7 +183,6 @@ async function loadGuildOverview() {
             }).length;
         }
         
-        // Compter les nouveaux rôles
         let newRolesCount = 0;
         if (guildData.roles) {
             newRolesCount = guildData.roles.filter(r => {
@@ -201,12 +191,10 @@ async function loadGuildOverview() {
             }).length;
         }
         
-        // Afficher les statistiques avec indicateurs +
         document.getElementById('memberCount').innerHTML = `${guildData.memberCount || '-'}${newMembersCount > 0 ? ` <span style="color: #10b981; font-size: 0.9rem;">+${newMembersCount}</span>` : ''}`;
         document.getElementById('channelCount').innerHTML = `${guildData.channels?.length || '-'}${newChannelsCount > 0 ? ` <span style="color: #10b981; font-size: 0.9rem;">+${newChannelsCount}</span>` : ''}`;
         document.getElementById('roleCount').innerHTML = `${guildData.roles?.length || '-'}${newRolesCount > 0 ? ` <span style="color: #10b981; font-size: 0.9rem;">+${newRolesCount}</span>` : ''}`;
         
-        // Afficher les informations
         document.getElementById('guildOwner').textContent = guildData.ownerName || 'Inconnu';
         document.getElementById('guildRegion').textContent = guildData.region || 'Automatique';
         
@@ -215,7 +203,6 @@ async function loadGuildOverview() {
             document.getElementById('guildCreated').textContent = createdDate.toLocaleDateString('fr-FR');
         }
         
-        // Charger les nouveaux membres et bans récents
         await loadNewMembers();
         await loadRecentBans();
     } catch (error) {
@@ -375,7 +362,6 @@ async function loadRecentBans() {
             return;
         }
         
-        // Afficher les 5 derniers bans (les plus récents)
         const recentBans = bans.slice(0, 5);
         
         container.innerHTML = '';
@@ -489,7 +475,7 @@ async function handleUnban(userId, username) {
     try {
         await unbanUser(currentGuildId, userId);
         alert(`${username} a été débanni avec succès`);
-        await loadGuildBans(); // Recharger la liste
+        await loadGuildBans();
     } catch (error) {
         alert(`Erreur lors du débannissement: ${error.message}`);
     }
@@ -502,20 +488,20 @@ async function loadGuildLogs() {
     try {
         const allLogs = await getCommandLogs();
         
-        // Filtrer les logs pour ce serveur uniquement
+
         const guildLogs = allLogs.filter(log => log.guild_id === currentGuildId);
         
-        // Calculer les statistiques
+
         const today = new Date().toISOString().split('T')[0];
         const todayLogs = guildLogs.filter(log => log.timestamp.startsWith(today));
         
-        // Compter les utilisateurs actifs uniques
+
         const activeUsers = new Set(guildLogs.map(log => log.user));
         
-        // Mettre à jour les compteurs
+
         document.getElementById('totalCommandsCount').textContent = guildLogs.length;
         document.getElementById('todayCommandsCount').textContent = todayLogs.length;
-        document.getElementById('errorsCount').textContent = '0'; // À implémenter avec les logs d'erreur
+        document.getElementById('errorsCount').textContent = '0'; 
         document.getElementById('activeUsersCount').textContent = activeUsers.size;
         
         if (guildLogs.length === 0) {
@@ -523,10 +509,10 @@ async function loadGuildLogs() {
             return;
         }
         
-        // Stocker les logs pour le filtrage
+
         window.currentGuildLogs = guildLogs;
         
-        // Afficher les logs
+
         displayLogs(guildLogs);
     } catch (error) {
         console.error('Erreur lors du chargement des logs:', error);
@@ -548,7 +534,7 @@ function displayLogs(logs) {
         logItem.className = 'log-item';
         logItem.dataset.logType = 'command';
         
-        // Formater les paramètres de la commande
+
         let parametersHtml = '';
         if (log.parameters && Object.keys(log.parameters).length > 0) {
             parametersHtml = '<div class="log-parameters" style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(255, 255, 255, 0.03); border-radius: 4px; font-size: 0.9rem;">';
@@ -582,7 +568,7 @@ function filterLogs() {
     
     let filteredLogs = window.currentGuildLogs;
     
-    // Filtrer par recherche
+
     if (searchTerm) {
         filteredLogs = filteredLogs.filter(log => 
             log.command.toLowerCase().includes(searchTerm) ||
@@ -591,8 +577,7 @@ function filterLogs() {
         );
     }
     
-    // Filtrer par type (pour l'instant seulement commands disponible)
-    // À implémenter: ajouter la gestion des erreurs
+
     
     displayLogs(filteredLogs);
 }
@@ -603,7 +588,6 @@ function downloadGuildLogs() {
         return;
     }
     
-    // Créer le contenu CSV
     let csvContent = 'Date,Commande,Utilisateur,Canal,Paramètres\n';
     
     window.currentGuildLogs.forEach(log => {
@@ -616,7 +600,6 @@ function downloadGuildLogs() {
         csvContent += `"${date}","${command}","${user}","${channel}","${params}"\n`;
     });
     
-    // Télécharger le fichier
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -631,7 +614,6 @@ function downloadGuildLogs() {
 function showUserProfile() {
     if (!discordUser) return;
     
-    // Créer un modal pour afficher le profil
     const modal = document.createElement('div');
     modal.id = 'profileModal';
     modal.style.cssText = `
@@ -696,7 +678,6 @@ function showUserProfile() {
         </div>
     `;
     
-    // Fermer le modal en cliquant en dehors
     modal.onclick = (e) => {
         if (e.target === modal) {
             modal.remove();
@@ -738,10 +719,8 @@ async function loadGuildMembers() {
             memberItem.style.cursor = 'pointer';
             memberItem.style.transition = 'all 0.2s ease';
             
-            // Ajouter l'événement click
             memberItem.onclick = () => showMemberDetails(member);
             
-            // Hover effect
             memberItem.onmouseenter = () => {
                 memberItem.style.background = 'rgba(255, 255, 255, 0.1)';
                 memberItem.style.transform = 'scale(1.02)';
@@ -751,7 +730,7 @@ async function loadGuildMembers() {
                 memberItem.style.transform = 'scale(1)';
             };
             
-            // Vérifier si c'est le créateur du bot
+
             const CREATOR_ID = '790617995625758730';
             const isCreator = member.id === CREATOR_ID;
             
@@ -782,11 +761,11 @@ function showMemberDetails(member) {
     const memberName = member.username || member.name || 'Membre';
     const avatarUrl = member.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
     
-    // Calculer la date de création du compte
+
     const createdDate = member.createdAt ? new Date(member.createdAt) : new Date(parseInt(member.id) / 4194304 + 1420070400000);
     const joinedDate = member.joinedAt ? new Date(member.joinedAt) : null;
     
-    // Créer la modale
+
     const modal = document.createElement('div');
     modal.id = 'memberModal';
     modal.style.cssText = `
@@ -870,7 +849,6 @@ function showMemberDetails(member) {
         </div>
     `;
     
-    // Fermer le modal en cliquant en dehors
     modal.onclick = (e) => {
         if (e.target === modal) {
             modal.remove();
@@ -905,18 +883,15 @@ async function loadGuildBlacklist() {
         blacklistList.style.gap = '1rem';
         
         for (const [userId, userDataOrReason] of Object.entries(blacklist)) {
-            // Support ancien et nouveau format
             let username, discriminator, avatar, reason, addedAt;
             
             if (typeof userDataOrReason === 'string') {
-                // Ancien format (juste la raison)
                 reason = userDataOrReason;
                 username = 'Utilisateur';
                 discriminator = '????';
                 avatar = null;
                 addedAt = null;
             } else {
-                // Nouveau format (objet avec infos complètes)
                 username = userDataOrReason.username || 'Utilisateur inconnu';
                 discriminator = userDataOrReason.discriminator || '0000';
                 avatar = userDataOrReason.avatar;
@@ -1001,11 +976,9 @@ async function addToBlacklist() {
         await addUserToBlacklist(currentGuildId, userId, reason);
         alert(`L'utilisateur ${userId} a été ajouté à la blacklist`);
         
-        // Vider les champs
         userIdInput.value = '';
         reasonInput.value = '';
         
-        // Recharger la liste
         await loadGuildBlacklist();
     } catch (error) {
         alert(`Erreur lors de l'ajout à la blacklist: ${error.message}`);
@@ -1026,7 +999,6 @@ async function removeFromBlacklist(userId) {
     }
 }
 
-// Fonction pour bannir un utilisateur
 async function addBan() {
     const userIdInput = document.getElementById('banUserId');
     const reasonInput = document.getElementById('banReason');
@@ -1052,33 +1024,28 @@ async function addBan() {
         await banUser(currentGuildId, userId, reason);
         alert(`L'utilisateur ${userId} a été banni avec succès`);
         
-        // Vider les champs
         userIdInput.value = '';
         reasonInput.value = '';
         
-        // Recharger la liste
         await loadGuildBans();
     } catch (error) {
         alert(`Erreur lors du bannissement: ${error.message}`);
     }
 }
 
-// ═══════════════════════════════════════════
-// ⚙️ GUILD SETTINGS FUNCTIONS
-// ═══════════════════════════════════════════
+
 
 async function loadGuildSettings() {
     try {
-        // Charger les paramètres existants
         const response = await fetch(`/api/guilds/${currentGuildId}/settings`);
         const settings = await response.json();
         
-        // Remplir les champs
         document.getElementById('commandPrefix').value = settings.prefix || '!';
         document.getElementById('languageSetting').value = settings.language || 'fr';
         document.getElementById('autoMod').checked = settings.auto_mod || false;
         
-        // Charger les canaux dans les sélecteurs
+        document.getElementById('welcomeEnabled').checked = settings.welcome_enabled || false;
+        
         if (guildData && guildData.channels) {
             const textChannels = guildData.channels.filter(c => c.type === 'text' || c.type.includes('text'));
             
@@ -1108,12 +1075,13 @@ async function loadGuildSettings() {
             }
         }
         
-        // Charger les rôles dans le sélecteur
         if (guildData && guildData.roles) {
             const modRoleSelect = document.getElementById('modRole');
-            modRoleSelect.innerHTML = '<option value="">Sélectionner un rôle...</option>';
+            const autoRoleSelect = document.getElementById('autoRole');
             
-            // Filtrer le rôle @everyone
+            modRoleSelect.innerHTML = '<option value="">Sélectionner un rôle...</option>';
+            autoRoleSelect.innerHTML = '<option value="">Aucun rôle automatique</option>';
+            
             const roles = guildData.roles.filter(r => r.name !== '@everyone');
             
             roles.forEach(role => {
@@ -1121,10 +1089,18 @@ async function loadGuildSettings() {
                 option.value = role.id;
                 option.textContent = role.name;
                 modRoleSelect.appendChild(option);
+                
+                const option2 = document.createElement('option');
+                option2.value = role.id;
+                option2.textContent = role.name;
+                autoRoleSelect.appendChild(option2);
             });
             
             if (settings.mod_role) {
                 modRoleSelect.value = settings.mod_role;
+            }
+            if (settings.auto_role) {
+                autoRoleSelect.value = settings.auto_role;
             }
         }
         
@@ -1141,7 +1117,9 @@ async function saveGuildSettings() {
             prefix: document.getElementById('commandPrefix').value || '!',
             language: document.getElementById('languageSetting').value || 'fr',
             log_channel: document.getElementById('logChannel').value || null,
+            welcome_enabled: document.getElementById('welcomeEnabled').checked,
             welcome_channel: document.getElementById('welcomeChannel').value || null,
+            auto_role: document.getElementById('autoRole').value || null,
             auto_mod: document.getElementById('autoMod').checked,
             mod_role: document.getElementById('modRole').value || null
         };
@@ -1181,7 +1159,6 @@ async function resetGuildSettings() {
         
         if (response.ok) {
             document.getElementById('settingsSaveStatus').innerHTML = '<i class="fas fa-check-circle" style="color: #10B981;"></i> Paramètres réinitialisés !';
-            // Recharger les paramètres
             await loadGuildSettings();
         } else {
             const error = await response.json();
@@ -1193,9 +1170,6 @@ async function resetGuildSettings() {
     }
 }
 
-// ═══════════════════════════════════════════
-// 🎫 TICKET MANAGEMENT FUNCTIONS
-// ═══════════════════════════════════════════
 
 let currentTicketsData = null;
 
@@ -1210,9 +1184,7 @@ async function loadTicketConfig() {
         const response = await fetch(`/api/guilds/${currentGuildId}/tickets/config`);
         const config = await response.json();
         
-        // Remplir les sélecteurs avec les canaux et catégories
         if (guildData) {
-            // Remplir le sélecteur de canal de tickets
             const ticketChannelSelect = document.getElementById('ticketChannel');
             ticketChannelSelect.innerHTML = '<option value="">Sélectionner un canal...</option>';
             
@@ -1227,7 +1199,6 @@ async function loadTicketConfig() {
                 ticketChannelSelect.appendChild(option);
             });
             
-            // Remplir les sélecteurs de catégories
             const categories = guildData.channels.filter(c => c.type === 'category' || c.type.includes('category'));
             
             const ticketCategorySelect = document.getElementById('ticketCategory');
@@ -1254,7 +1225,6 @@ async function loadTicketConfig() {
                 archiveCategorySelect.appendChild(option2);
             });
             
-            // Remplir le sélecteur de rôles support
             const supportRolesSelect = document.getElementById('supportRoles');
             supportRolesSelect.innerHTML = '';
             
@@ -1348,7 +1318,6 @@ async function loadTicketStats() {
         document.getElementById('openTickets').textContent = data.open || 0;
         document.getElementById('closedTickets').textContent = data.closed || 0;
         
-        // Calculer le temps de réponse moyen (si disponible)
         if (data.tickets && data.tickets.length > 0) {
             const closedTickets = data.tickets.filter(t => t.status === 'closed' && t.closed_at && t.created_at);
             if (closedTickets.length > 0) {
@@ -1449,7 +1418,6 @@ function displayTickets(tickets) {
             ? '<span style="background: #F59E0B; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">🔓 Ouvert</span>'
             : '<span style="background: #10B981; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">✅ Fermé</span>';
         
-        // Badge de priorité
         const priorityConfig = {
             urgent: { label: '🔴 URGENT', color: '#EF4444', bg: 'rgba(239, 68, 68, 0.1)' },
             high: { label: '🔶 Élevé', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)' },
@@ -1463,7 +1431,6 @@ function displayTickets(tickets) {
         const createdDate = new Date(ticket.created_at || Date.now());
         const closedDate = ticket.closed_at ? new Date(ticket.closed_at) : null;
         
-        // Trouver qui a claim le ticket
         let claimedBy = null;
         let joinedBy = [];
         if (ticket.notes && Array.isArray(ticket.notes)) {
@@ -1547,14 +1514,12 @@ function filterTickets() {
     
     let filteredTickets = currentTicketsData.tickets;
     
-    // Filtrer par statut
     if (statusFilter === 'open') {
         filteredTickets = filteredTickets.filter(t => t.status === 'open');
     } else if (statusFilter === 'closed') {
         filteredTickets = filteredTickets.filter(t => t.status === 'closed');
     }
     
-    // Filtrer par priorité
     if (priorityFilter !== 'all') {
         filteredTickets = filteredTickets.filter(t => (t.priority || 'normal') === priorityFilter);
     }
@@ -1562,9 +1527,7 @@ function filterTickets() {
     displayTickets(filteredTickets);
 }
 
-// ═══════════════════════════════════════════
-// 🚨 GESTION DES WARNS
-// ═══════════════════════════════════════════
+
 
 let currentWarnsData = null;
 
@@ -1584,7 +1547,6 @@ async function loadWarnConfig() {
         const response = await fetch(`/api/guilds/${currentGuildId}/warn-config`);
         const config = await response.json();
         
-        // Afficher les règles existantes
         displayWarnRules(config.actions || {});
     } catch (error) {
         console.error('Erreur chargement config warns:', error);
@@ -1605,7 +1567,6 @@ function displayWarnRules(actions) {
         return;
     }
     
-    // Trier les règles par nombre de warns
     const sortedKeys = Object.keys(actions).sort((a, b) => parseInt(a) - parseInt(b));
     
     const colors = [
@@ -1693,7 +1654,6 @@ function toggleDurationField(warnCount) {
 }
 
 function addWarnRule() {
-    // Trouver le prochain nombre de warns disponible
     const container = document.getElementById('warnRulesList');
     const existingRules = container.querySelectorAll('.warn-rule');
     
@@ -1707,15 +1667,12 @@ function addWarnRule() {
         }
     });
     
-    // Trouver le premier nombre disponible
     while (usedCounts.includes(newCount)) {
         newCount++;
     }
     
-    // Créer une nouvelle règle temporaire
     const newActions = {};
     
-    // Récupérer les règles existantes
     existingRules.forEach(rule => {
         const countInput = rule.querySelector('input[type="number"]');
         if (countInput) {
@@ -1731,7 +1688,6 @@ function addWarnRule() {
         }
     });
     
-    // Ajouter la nouvelle règle
     newActions[newCount] = {
         type: 'timeout',
         enabled: true,
@@ -1784,7 +1740,6 @@ async function saveWarnConfig() {
             log_channel: null
         };
         
-        // Collecter toutes les règles
         rules.forEach(rule => {
             const countInput = rule.querySelector('input[type="number"]');
             if (countInput) {
@@ -1821,7 +1776,6 @@ async function saveWarnConfig() {
             setTimeout(() => {
                 statusEl.textContent = '';
             }, 3000);
-            // Recharger pour actualiser l'affichage
             await loadWarnConfig();
         } else {
             const error = await response.json();
@@ -1842,7 +1796,6 @@ async function loadWarnsStats() {
         const warns = data.warns || {};
         const allWarns = [];
         
-        // Collecter tous les warns
         Object.keys(warns).forEach(userId => {
             warns[userId].forEach(warn => {
                 allWarns.push({
@@ -1852,22 +1805,18 @@ async function loadWarnsStats() {
             });
         });
         
-        // Calculer les statistiques
         document.getElementById('totalWarns').textContent = allWarns.length;
         document.getElementById('totalWarnedUsers').textContent = Object.keys(warns).length;
         
-        // Warns aujourd'hui
         const today = new Date().toISOString().split('T')[0];
         const warnsToday = allWarns.filter(w => w.timestamp && w.timestamp.startsWith(today)).length;
         document.getElementById('warnsToday').textContent = warnsToday;
         
-        // Membre le plus averti
         if (Object.keys(warns).length > 0) {
             const mostWarned = Object.entries(warns).reduce((max, [userId, userWarns]) => 
                 userWarns.length > (warns[max] || []).length ? userId : max
             );
             
-            // Récupérer le nom du membre
             try {
                 const membersResponse = await fetch(`/api/guilds/${currentGuildId}/members`);
                 const members = await membersResponse.json();
@@ -1911,16 +1860,16 @@ async function displayWarns(warns) {
     
     if (!warns || Object.keys(warns).length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; padding: 3rem; opacity: 0.7; background: rgba(16, 185, 129, 0.05); border-radius: 16px; border: 2px dashed rgba(16, 185, 129, 0.3);">
+            <div style="text-align: center; padding: 3rem; opacity: 0.7;">
                 <i class="fas fa-check-circle" style="font-size: 3rem; color: #10B981; margin-bottom: 1rem;"></i>
-                <h3 style="color: #10B981;">Aucun avertissement</h3>
+                <h3>Aucun avertissement</h3>
                 <p>Ce serveur n'a aucun membre averti</p>
             </div>
         `;
         return;
     }
     
-    // Récupérer les informations des membres
+
     let members = [];
     try {
         const membersResponse = await fetch(`/api/guilds/${currentGuildId}/members`);
@@ -1929,9 +1878,13 @@ async function displayWarns(warns) {
         console.error('Erreur récupération membres:', error);
     }
     
-    let html = '<div style="display: grid; gap: 1.25rem;">';
+    container.innerHTML = '';
+    const warnList = document.createElement('div');
+    warnList.className = 'warn-list';
+    warnList.style.display = 'grid';
+    warnList.style.gridTemplateColumns = 'repeat(auto-fill, minmax(350px, 1fr))';
+    warnList.style.gap = '1rem';
     
-    // Trier par nombre de warns (décroissant)
     const sortedWarns = Object.entries(warns).sort((a, b) => b[1].length - a[1].length);
     
     for (const [userId, userWarns] of sortedWarns) {
@@ -1939,82 +1892,78 @@ async function displayWarns(warns) {
         const memberName = member ? member.username : `Utilisateur ${userId.slice(0, 8)}...`;
         const memberAvatar = member && member.avatar ? member.avatar : null;
         
-        html += `
-            <div class="card" style="border-left: 4px solid #EF4444; box-shadow: 0 4px 6px rgba(0,0,0,0.15); border-radius: 12px; overflow: hidden;">
-                <div class="card-body" style="padding: 1.5rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.25rem;">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            ${memberAvatar ? `
-                                <img src="${memberAvatar}" alt="${memberName}" style="width: 56px; height: 56px; border-radius: 50%; border: 3px solid #EF4444; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);">
-                            ` : `
-                                <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.5rem; border: 3px solid rgba(255,255,255,0.2); box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);">
-                                    ${memberName[0].toUpperCase()}
-                                </div>
-                            `}
-                            <div>
-                                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 600;">${memberName}</h3>
-                                <p style="margin: 0; opacity: 0.6; font-size: 0.85rem;">ID: ${userId}</p>
-                            </div>
+        const warnItem = document.createElement('div');
+        warnItem.className = 'warn-item';
+        warnItem.style.padding = '1.25rem';
+        warnItem.style.background = 'rgba(239, 68, 68, 0.1)';
+        warnItem.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        warnItem.style.borderRadius = '8px';
+        warnItem.style.display = 'flex';
+        warnItem.style.flexDirection = 'column';
+        warnItem.style.gap = '1rem';
+        
+        const avatarUrl = memberAvatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+        
+        let warnsHtml = '';
+        userWarns.forEach((warn, index) => {
+            const warnDate = warn.timestamp ? new Date(warn.timestamp).toLocaleDateString('fr-FR') : 'Date inconnue';
+            const moderator = warn.moderator_name || warn.moderator || 'Modérateur inconnu';
+            
+            warnsHtml += `
+                <div style="padding: 0.75rem; background: rgba(0, 0, 0, 0.2); border-radius: 6px; margin-top: ${index > 0 ? '0.5rem' : '0'};">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                        <div style="font-size: 0.85rem; opacity: 0.7;">
+                            <i class="fas fa-calendar"></i> ${warnDate}
                         </div>
-                        <div style="display: flex; gap: 0.75rem; align-items: center;">
-                            <span class="badge" style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); padding: 0.5rem 1rem; font-size: 1rem; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3); border-radius: 8px;">
-                                <i class="fas fa-exclamation-triangle"></i> ${userWarns.length} warn${userWarns.length > 1 ? 's' : ''}
-                            </span>
-                            <button class="btn btn-danger btn-sm" onclick="clearUserWarns('${userId}')" title="Supprimer tous les warns" style="border-radius: 8px; padding: 0.5rem 0.75rem;">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="removeWarn('${userId}', ${warn.id || index})" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
-                    
-                    <div style="display: grid; gap: 0.75rem;">
-                        ${userWarns.map((warn, index) => `
-                            <div class="warn-item" style="background: rgba(239, 68, 68, 0.08); border-radius: 10px; padding: 1.25rem; border-left: 3px solid #EF4444; transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.background='rgba(239, 68, 68, 0.12)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'">
-                                <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
-                                    <div style="flex: 1;">
-                                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-                                            <span class="badge" style="background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%); font-size: 0.8rem; padding: 0.35rem 0.75rem; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                                                Warn #${warn.id || index + 1}
-                                            </span>
-                                            ${warn.timestamp ? `
-                                                <span style="opacity: 0.7; font-size: 0.85rem;">
-                                                    <i class="fas fa-clock"></i> ${new Date(warn.timestamp).toLocaleDateString('fr-FR')} à ${new Date(warn.timestamp).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
-                                                </span>
-                                            ` : ''}
-                                        </div>
-                                        
-                                        <div contenteditable="true" 
-                                             id="warn_reason_${userId}_${warn.id || index}" 
-                                             style="background: rgba(0,0,0,0.2); padding: 0.75rem; border-radius: 8px; margin-bottom: 0.75rem; border: 1px solid rgba(255,255,255,0.05); min-height: 40px; outline: none;"
-                                             onblur="updateWarnReason('${userId}', ${warn.id || index}, this.textContent)">
-                                            ${warn.reason || 'Aucune raison spécifiée'}
-                                        </div>
-                                        
-                                        ${warn.moderator_name || warn.moderator ? `
-                                            <p style="margin: 0; opacity: 0.6; font-size: 0.9rem;">
-                                                <i class="fas fa-user-shield" style="color: #6366F1;"></i> Modérateur: <strong>${warn.moderator_name || warn.moderator}</strong>
-                                            </p>
-                                        ` : ''}
-                                    </div>
-                                    <button class="btn btn-danger btn-sm" onclick="removeWarn('${userId}', ${warn.id || index})" title="Supprimer ce warn" style="border-radius: 8px; padding: 0.5rem 0.75rem; flex-shrink: 0;">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `).join('')}
+                    <div contenteditable="true" 
+                         id="warn_reason_${userId}_${warn.id || index}" 
+                         style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 4px; margin-bottom: 0.5rem; border: 1px solid rgba(255,255,255,0.05); min-height: 30px; outline: none; font-size: 0.9rem;"
+                         onblur="updateWarnReason('${userId}', ${warn.id || index}, this.textContent)">
+                        ${warn.reason || 'Aucune raison spécifiée'}
+                    </div>
+                    <div style="font-size: 0.85rem; opacity: 0.6;">
+                        <i class="fas fa-user-shield"></i> Par: <strong>${moderator}</strong>
+                    </div>
+                </div>
+            `;
+        });
+        
+        warnItem.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid rgba(239, 68, 68, 0.5);">
+                    <img src="${avatarUrl}" alt="${memberName}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <h4 style="margin: 0; font-size: 1.05rem; margin-bottom: 0.25rem;">${memberName}</h4>
+                    <p style="margin: 0; font-size: 0.85rem; opacity: 0.7;">ID: ${userId}</p>
+                    <div style="margin-top: 0.5rem;">
+                        <span style="background: rgba(239, 68, 68, 0.3); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600;">
+                            <i class="fas fa-exclamation-triangle"></i> ${userWarns.length} warn${userWarns.length > 1 ? 's' : ''}
+                        </span>
                     </div>
                 </div>
             </div>
+            <div>
+                ${warnsHtml}
+            </div>
+            <button class="btn btn-danger" onclick="clearUserWarns('${userId}')" style="width: 100%; margin-top: 0.5rem;">
+                <i class="fas fa-trash"></i> Supprimer tous les warns
+            </button>
         `;
+        warnList.appendChild(warnItem);
     }
     
-    html += '</div>';
-    container.innerHTML = html;
+    container.appendChild(warnList);
 }
 
 async function updateWarnReason(userId, warnId, newReason) {
     if (!newReason || newReason.trim() === '') {
         showError('La raison ne peut pas être vide');
-        await loadWarns(); // Recharger pour annuler la modification
+        await loadWarns();
         return;
     }
     
@@ -2096,7 +2045,6 @@ function filterWarns() {
     
     let warns = { ...currentWarnsData.warns };
     
-    // Filtrer par recherche
     if (searchTerm) {
         const filtered = {};
         Object.entries(warns).forEach(([userId, userWarns]) => {
@@ -2107,7 +2055,6 @@ function filterWarns() {
         warns = filtered;
     }
     
-    // Trier
     const sorted = Object.entries(warns).sort((a, b) => {
         if (sortBy === 'recent') {
             const aLatest = Math.max(...a[1].map(w => w.timestamp ? new Date(w.timestamp).getTime() : 0));
@@ -2141,7 +2088,6 @@ async function addNewWarn() {
     const userId = userIdInput.value.trim();
     const reason = reasonInput.value.trim();
     
-    // Validation de l'ID
     if (!userId) {
         statusElement.style.display = 'block';
         statusElement.style.background = 'rgba(239, 68, 68, 0.1)';
@@ -2175,7 +2121,6 @@ async function addNewWarn() {
         statusElement.style.border = '2px solid rgba(245, 158, 11, 0.3)';
         statusElement.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem; color: #F59E0B;"></i><span style="color: #F59E0B;">Ajout de l\'avertissement en cours...</span>';
         
-        // Récupérer les infos de l'utilisateur connecté
         const discordUser = JSON.parse(localStorage.getItem('discord_user') || '{}');
         
         const response = await fetch(`/api/guilds/${currentGuildId}/warns`, {
@@ -2205,11 +2150,11 @@ async function addNewWarn() {
             statusElement.style.border = '2px solid rgba(16, 185, 129, 0.3)';
             statusElement.innerHTML = successMessage;
             
-            // Réinitialiser les champs
+s
             reasonInput.value = '';
             userIdInput.value = '';
             
-            // Actualiser la liste
+
             await loadWarns();
             await loadWarnsStats();
             
@@ -2234,5 +2179,5 @@ async function addNewWarn() {
 }
 
 async function loadMembersForWarn() {
-    // Fonction supprimée car on utilise maintenant un champ texte pour l'ID
+
 }
