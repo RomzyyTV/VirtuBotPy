@@ -1,4 +1,4 @@
-const API_URL = localStorage.getItem('apiUrl') || 'http://localhost:3001';
+const API_URL = localStorage.getItem('apiUrl') || `http://${window.location.hostname}:3001`;
 
 async function fetchAPI(endpoint, options = {}) {
     try {
