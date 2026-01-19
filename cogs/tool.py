@@ -11,7 +11,8 @@ class Tool(commands.Cog):
                 await interaction.response.send_message("❌ Tu n'as pas la permission d'utiliser cette commande.",ephemeral=True)
             else:
                 print(f"{interaction.user} a utilisé la commande /say et a dis : {messages}")
-                await interaction.response.send_message(messages)
+                await interaction.response.send_message("L'embed a été envoyé avec succès")
+                await interaction.channel.send(messages)
 
         @bot.tree.command(name="sayembed", description="Fait répéter un texte sous forme d'embed configurable")
         async def sayembed(
