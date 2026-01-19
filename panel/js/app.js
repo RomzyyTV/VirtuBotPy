@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         await loadUserData();
         
-        // Récupérer l'ID admin depuis l'API
+
         const adminResponse = await fetch('/api/admin/id');
         if (adminResponse.ok) {
             const adminData = await adminResponse.json();
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadDashboard();
     
-    // Vérifier les mises à jour (uniquement pour l'admin)
+
     console.log('🔍 Check updates - User ID:', discordUser?.id, 'Admin ID:', ADMIN_USER_ID);
     if (discordUser && ADMIN_USER_ID && String(discordUser.id) === String(ADMIN_USER_ID)) {
         console.log('✅ User is admin, checking for updates...');
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadUserData() {
     const token = localStorage.getItem('discord_token');
     
-    // Toujours recharger les données de l'utilisateur pour avoir l'avatar à jour
+
     const response = await fetch('https://discord.com/api/users/@me', {
         headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -133,14 +133,14 @@ async function checkBotStatus() {
 
 async function loadDashboard() {
     try {
-        // Afficher l'utilisateur dans le header
+
         const userAvatar = document.getElementById('userAvatar');
         const userName = document.getElementById('userName');
         
         if (discordUser) {
             userName.textContent = discordUser.username;
             if (discordUser.avatar) {
-                // Détecter si l'avatar est animé (commence par a_)
+
                 const isAnimated = discordUser.avatar.startsWith('a_');
                 const extension = isAnimated ? 'gif' : 'png';
                 const avatarUrl = `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.${extension}?size=128`;
@@ -148,19 +148,18 @@ async function loadDashboard() {
                 userAvatar.style.display = 'block';
                 userAvatar.style.cursor = 'pointer';
                 
-                // Ajouter l'événement click pour voir le profil
+
                 userAvatar.onclick = () => showUserProfile();
             }
         }
         
         const stats = await getBotStats();
         
-        // Filtrer les serveurs où l'utilisateur a les permissions admin ET où le bot est présent
         const botGuilds = await getGuilds();
         const adminGuilds = botGuilds.filter(botGuild => {
             const userGuild = userGuilds.find(ug => ug.id === botGuild.id);
             if (!userGuild) return false;
-            const hasAdmin = (userGuild.permissions & 0x8) === 0x8; // Permission Administrator
+            const hasAdmin = (userGuild.permissions & 0x8) === 0x8;
             return hasAdmin;
         });
         
@@ -177,12 +176,12 @@ async function loadDashboard() {
         await checkBotStatus();
     } catch (error) {
         console.error('Erreur lors du chargement du dashboard:', error);
-        // Afficher quand même l'interface avec des valeurs par défaut
+
         document.getElementById('adminGuildCount').textContent = '0';
         document.getElementById('latency').textContent = '?';
         document.getElementById('commandCount').textContent = '?';
         
-        // Afficher un message d'erreur moins intrusif
+
         const dashboardPage = document.getElementById('dashboard-page');
         if (dashboardPage && !document.querySelector('.error-banner')) {
             const errorBanner = document.createElement('div');
@@ -210,11 +209,11 @@ async function loadGuilds() {
     try {
         const guilds = await getGuilds();
         
-        // Filtrer pour afficher uniquement les serveurs où l'utilisateur est admin
+
         const adminGuilds = guilds.filter(guild => {
             const userGuild = userGuilds.find(ug => ug.id === guild.id);
             if (!userGuild) return false;
-            const hasAdmin = (userGuild.permissions & 0x8) === 0x8; // Permission Administrator
+            const hasAdmin = (userGuild.permissions & 0x8) === 0x8;
             return hasAdmin;
         });
         
@@ -230,11 +229,11 @@ async function loadGuilds() {
             const guildCard = document.createElement('div');
             guildCard.className = 'guild-card';
             guildCard.onclick = () => {
-                // Rediriger vers serveur.html avec l'ID du serveur
+
                 window.location.href = `serveur.html?guild=${guild.id}`;
             };
             
-            // Vérifier si l'utilisateur est le propriétaire
+
             const userGuild = userGuilds.find(ug => ug.id === guild.id);
             const isOwner = userGuild && userGuild.owner === true;
             
@@ -270,7 +269,7 @@ async function loadCommands() {
             return;
         }
         
-        // Regrouper les commandes par catégorie
+
         const categories = {};
         commands.forEach(cmd => {
             const category = cmd.category || 'Autres';
@@ -280,7 +279,7 @@ async function loadCommands() {
             categories[category].push(cmd);
         });
         
-        // 🎨 Configuration des catégories avec emojis et styles
+
         const categoryConfig = {
             'Base': {
                 icon: '📚',
@@ -328,7 +327,7 @@ async function loadCommands() {
         
         commandsList.innerHTML = '';
         
-        // Afficher les catégories dans un ordre logique
+
         const categoryOrder = ['Base', 'Administration', 'Jeux', 'Utilitaires', 'Tickets', 'Panel', 'Autres'];
         const sortedCategories = categoryOrder.filter(cat => categories[cat]);
         Object.keys(categories).forEach(cat => {
@@ -346,7 +345,7 @@ async function loadCommands() {
             
             const config = categoryConfig[category] || categoryConfig['Autres'];
             
-            // En-tête stylé de la catégorie
+
             const categoryHeader = document.createElement('div');
             categoryHeader.className = 'category-header-styled';
             categoryHeader.style.cssText = `
@@ -358,8 +357,7 @@ async function loadCommands() {
                 box-shadow: 0 4px 16px ${config.color}40;
                 overflow: hidden;
             `;
-            
-            // Bordure décorative ASCII
+        
             const decorativeBorder = document.createElement('div');
             decorativeBorder.style.cssText = `
                 position: absolute;
@@ -437,7 +435,7 @@ async function loadCommands() {
                     </p>
                 `;
                 
-                // Effet hover amélioré
+
                 commandItem.addEventListener('mouseenter', function() {
                     this.style.transform = 'translateY(-5px) scale(1.02)';
                     this.style.boxShadow = `0 12px 28px ${config.color}50, 0 0 0 1px ${config.color}`;
@@ -482,7 +480,7 @@ function showError(message) {
 async function showUserProfile() {
     if (!discordUser) return;
     
-    // Vérifier si l'utilisateur est admin
+
     let isAdmin = false;
     try {
         const adminCheck = await fetch('/api/admin/check', {
@@ -496,7 +494,6 @@ async function showUserProfile() {
         console.error('Erreur vérification admin:', error);
     }
     
-    // Créer un modal pour afficher le profil
     const modal = document.createElement('div');
     modal.id = 'profileModal';
     modal.style.cssText = `
@@ -583,7 +580,6 @@ async function showUserProfile() {
         </div>
     `;
     
-    // Fermer le modal en cliquant en dehors
     modal.onclick = (e) => {
         if (e.target === modal) {
             modal.remove();
@@ -601,9 +597,7 @@ async function checkForUpdates() {
         if (data.update_available && data.update_info) {
             const updateInfo = data.update_info;
             
-            // Vérifier le type de notification
             if (updateInfo.type === 'modified_version') {
-                // Version modifiée - Avertissement
                 const notification = document.createElement('div');
                 notification.id = 'update-notification';
                 notification.style.cssText = `
@@ -654,7 +648,6 @@ async function checkForUpdates() {
                 document.body.appendChild(notification);
                 
             } else {
-                // Nouvelle mise à jour disponible
                 const notification = document.createElement('div');
                 notification.id = 'update-notification';
                 notification.style.cssText = `
@@ -713,7 +706,6 @@ async function checkForUpdates() {
                 document.body.appendChild(notification);
             }
             
-            // Ajouter l'animation CSS
             const style = document.createElement('style');
             style.textContent = `
                 @keyframes slideIn {

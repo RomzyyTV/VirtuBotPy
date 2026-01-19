@@ -2,7 +2,17 @@ const API_URL = localStorage.getItem('apiUrl') || `http://${window.location.host
 
 async function fetchAPI(endpoint, options = {}) {
     try {
-        const response = await fetch(`${API_URL}${endpoint}`, {
+
+        const token = localStorage.getItem('discord_token');
+        
+
+        let url = `${API_URL}${endpoint}`;
+        if (token) {
+            const separator = endpoint.includes('?') ? '&' : '?';
+            url += `${separator}token=${encodeURIComponent(token)}`;
+        }
+        
+        const response = await fetch(url, {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -10,7 +20,7 @@ async function fetchAPI(endpoint, options = {}) {
             }
         });
 
-        // Vérifier si la réponse est du JSON
+
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
             console.error('Réponse non-JSON reçue:', await response.text());
@@ -20,6 +30,18 @@ async function fetchAPI(endpoint, options = {}) {
         const data = await response.json();
 
         if (!response.ok) {
+
+            if (response.status === 401) {
+                localStorage.removeItem('discord_token');
+                window.location.href = '/login.html';
+                throw new Error('Session expirée, veuillez vous reconnecter');
+            }
+            
+
+            if (response.status === 403) {
+                throw new Error(data.message || 'Vous n\'avez pas les permissions pour effectuer cette action');
+            }
+            
             throw new Error(data.error || `Erreur HTTP ${response.status}`);
         }
 
@@ -27,7 +49,7 @@ async function fetchAPI(endpoint, options = {}) {
     } catch (error) {
         console.error('Erreur API:', error);
         
-        // Message plus clair pour l'utilisateur
+
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
             throw new Error('Impossible de se connecter à l\'API. Vérifiez que le serveur est démarré sur ' + API_URL);
         }

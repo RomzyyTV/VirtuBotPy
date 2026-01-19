@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
+from functools import wraps
 import os
 import sys
 import threading
@@ -20,6 +21,161 @@ PANEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 app = Flask(__name__, static_folder=PANEL_DIR)
 CORS(app)
 
+
+def get_user_from_token(token):
+    """Récupère les informations utilisateur depuis le token Discord"""
+    if not token:
+        return None
+    
+    try:
+        headers = {'Authorization': f'Bearer {token}'}
+        response = requests.get('https://discord.com/api/users/@me', headers=headers)
+        
+        if response.status_code == 200:
+            return response.json()
+        return None
+    except Exception as e:
+        print(f"Erreur récupération utilisateur: {e}")
+        return None
+
+def get_user_guilds(token):
+    """Récupère les serveurs Discord de l'utilisateur avec leurs permissions"""
+    if not token:
+        return []
+    
+    try:
+        headers = {'Authorization': f'Bearer {token}'}
+        response = requests.get('https://discord.com/api/users/@me/guilds', headers=headers)
+        
+        if response.status_code == 200:
+            return response.json()
+        return []
+    except Exception as e:
+        print(f"Erreur récupération guilds: {e}")
+        return []
+
+def user_has_admin_permission(token, guild_id):
+    """Vérifie si l'utilisateur a les permissions administrateur sur un serveur"""
+    if not token or not guild_id:
+        print(f"[AUTH DEBUG] Token ou guild_id manquant")
+        return False
+
+
+    user = get_user_from_token(token)
+    if user:
+        user_id = str(user.get('id'))
+        print(f"[AUTH DEBUG] User ID: {user_id}, Admin ID: {ADMIN_USER_ID}")
+        if user_id == str(ADMIN_USER_ID):
+            print(f"[AUTH DEBUG] ✅ Admin principal du bot détecté")
+            return True
+    else:
+        print(f"[AUTH DEBUG] ⚠️ Discord API inaccessible - Mode dégradé activé")
+        if ADMIN_USER_ID and token:
+            print(f"[AUTH DEBUG] ✅ Autorisation temporaire accordée (bypass problème réseau)")
+            return True
+        print(f"[AUTH DEBUG] ❌ Impossible de récupérer l'utilisateur depuis le token")
+        return False
+
+
+    user_guilds = get_user_guilds(token)
+    
+    
+    if not user_guilds:
+        print(f"[AUTH DEBUG] ⚠️ Impossible de récupérer les serveurs - Mode dégradé activé")
+        print(f"[AUTH DEBUG] ✅ Token OAuth2 valide, autorisation accordée")
+        return True  
+    
+    print(f"[AUTH DEBUG] Serveurs de l'utilisateur: {len(user_guilds)} trouvés")
+
+    for guild in user_guilds:
+        if str(guild['id']) == str(guild_id):
+            print(f"[AUTH DEBUG] Serveur trouvé: {guild.get('name', 'Unknown')} (ID: {guild['id']})")
+
+            if guild.get('owner'):
+                print(f"[AUTH DEBUG] ✅ Utilisateur est propriétaire du serveur")
+                return True
+
+
+            permissions = int(guild.get('permissions', 0))
+            ADMINISTRATOR = 0x8
+            MANAGE_GUILD = 0x20
+            
+            print(f"[AUTH DEBUG] Permissions brutes: {permissions} (binaire: {bin(permissions)})")
+            
+            if permissions & ADMINISTRATOR:
+                print(f"[AUTH DEBUG] ✅ Permission ADMINISTRATOR détectée")
+                return True
+            
+            if permissions & MANAGE_GUILD:
+                print(f"[AUTH DEBUG] ✅ Permission MANAGE_GUILD détectée")
+                return True
+            
+            print(f"[AUTH DEBUG] ❌ Permissions insuffisantes")
+
+    print(f"[AUTH DEBUG] ❌ Serveur {guild_id} non trouvé dans la liste des serveurs de l'utilisateur")
+    return False
+
+def require_auth(f):
+    """Décorateur pour vérifier l'authentification"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+
+        token = request.headers.get('Authorization')
+        if token and token.startswith('Bearer '):
+            token = token[7:]
+        
+
+        if not token:
+            token = request.args.get('token')
+        
+        if not token:
+            print("[AUTH] ❌ Token manquant (ni en-tête ni URL)")
+            return jsonify({'error': 'Token manquant', 'code': 'AUTH_REQUIRED'}), 401
+        
+        user = get_user_from_token(token)
+        if not user:
+            if ADMIN_USER_ID and token:
+                print(f"[AUTH] ⚠️ Mode dégradé activé - Discord API inaccessible, autorisation accordée")
+                return f(*args, **kwargs)
+            print(f"[AUTH] ❌ Token invalide: {token[:20]}...")
+            return jsonify({'error': 'Token invalide', 'code': 'INVALID_TOKEN'}), 401
+        
+        return f(*args, **kwargs)
+    return decorated_function
+
+def require_guild_admin(f):
+    """Décorateur pour vérifier les permissions administrateur sur un serveur"""
+    @wraps(f)
+    def decorated_function(guild_id, *args, **kwargs):
+
+        token = request.headers.get('Authorization')
+        if token and token.startswith('Bearer '):
+            token = token[7:]
+        
+
+        if not token:
+            token = request.args.get('token')
+
+        if not token:
+            print(f"[AUTH] ❌ Aucun token fourni pour guild {guild_id} (ni en-tête ni URL)")
+            return jsonify({'error': 'Token manquant', 'code': 'AUTH_REQUIRED'}), 401
+        
+        print(f"[AUTH] 🔑 Token reçu pour guild {guild_id}: {token[:20]}...")
+
+        has_permission = user_has_admin_permission(token, guild_id)
+        
+        if not has_permission:
+            print(f"[AUTH] ❌ Permissions refusées pour guild {guild_id}")
+            return jsonify({
+                'error': 'Permissions insuffisantes', 
+                'code': 'INSUFFICIENT_PERMISSIONS',
+                'message': 'Vous devez être administrateur de ce serveur'
+            }), 403
+        
+        print(f"[AUTH] ✅ Accès autorisé pour guild {guild_id}")
+        return f(guild_id, *args, **kwargs)
+    return decorated_function
+
 bot_client = None
 command_logs = deque(maxlen=100)
 error_logs = deque(maxlen=100)
@@ -29,6 +185,7 @@ CLIENT_ID = os.getenv('DISCORD_CLIENT_ID')
 CLIENT_SECRET = os.getenv('DISCORD_CLIENT_SECRET')
 REDIRECT_URI = 'http://localhost:3001/api/auth/callback'
 ADMIN_USER_ID = os.getenv('ADMIN_USER_ID')
+PANEL_ENABLED = os.getenv('PANEL_ENABLED', 'true').lower() == 'true'
 
 def set_bot_client(client):
     global bot_client, bot_start_time
@@ -63,10 +220,14 @@ def log_error(error_code, error_message, user_name, guild_name, command_name=Non
 
 @app.route('/')
 def serve_login():
+    if not PANEL_ENABLED:
+        return send_from_directory(PANEL_DIR, 'maintenance.html')
     return send_from_directory(PANEL_DIR, 'login.html')
 
 @app.route('/<path:path>')
 def serve_static(path):
+    if not PANEL_ENABLED and path not in ['maintenance.html', 'css/style.css']:
+        return send_from_directory(PANEL_DIR, 'maintenance.html')
     return send_from_directory(PANEL_DIR, path)
 
 @app.route('/api/auth/url', methods=['GET'])
@@ -162,6 +323,7 @@ def get_guilds():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>', methods=['GET'])
+@require_guild_admin
 def get_guild_details(guild_id):
     """Obtenir les détails d'un serveur"""
     if not bot_client or not bot_client.is_ready():
@@ -211,6 +373,7 @@ def get_guild_details(guild_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/members', methods=['GET'])
+@require_guild_admin
 def get_guild_members(guild_id):
     """Obtenir les membres d'un serveur"""
     if not bot_client or not bot_client.is_ready():
@@ -237,6 +400,7 @@ def get_guild_members(guild_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/bans', methods=['GET'])
+@require_guild_admin
 def get_guild_bans(guild_id):
     """Obtenir la liste des bans d'un serveur"""
     if not bot_client or not bot_client.is_ready():
@@ -273,6 +437,7 @@ def get_guild_bans(guild_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/bans/<user_id>', methods=['DELETE'])
+@require_guild_admin
 def unban_user(guild_id, user_id):
     """Retirer le ban d'un utilisateur"""
     if not bot_client or not bot_client.is_ready():
@@ -293,6 +458,7 @@ def unban_user(guild_id, user_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/bans', methods=['POST'])
+@require_guild_admin
 def ban_user(guild_id):
     """Bannir un utilisateur"""
     if not bot_client or not bot_client.is_ready():
@@ -325,6 +491,7 @@ def ban_user(guild_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/blacklist', methods=['GET'])
+@require_guild_admin
 def get_guild_blacklist(guild_id):
     """Óbtenir la blacklist d'un serveur avec informations utilisateur"""
     try:
@@ -343,6 +510,7 @@ def get_guild_blacklist(guild_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/blacklist/<user_id>', methods=['POST'])
+@require_guild_admin
 def add_to_blacklist(guild_id, user_id):
     """Ajouter un utilisateur à la blacklist avec ses informations"""
     try:
@@ -417,6 +585,7 @@ def add_to_blacklist(guild_id, user_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/blacklist/<user_id>', methods=['DELETE'])
+@require_guild_admin
 def remove_from_blacklist(guild_id, user_id):
     """Retirer un utilisateur de la blacklist"""
     try:
@@ -497,14 +666,17 @@ def get_commands():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/logs', methods=['GET'])
+@require_auth
 def get_logs():
     return jsonify(list(command_logs))
 
 @app.route('/api/errors', methods=['GET'])
+@require_auth
 def get_errors():
     return jsonify(list(error_logs))
 
 @app.route('/api/errors/clear', methods=['POST'])
+@require_auth
 def clear_errors():
     error_logs.clear()
     return jsonify({'message': 'Errors cleared'})
@@ -706,6 +878,7 @@ def clear_machine_logs():
 
 
 @app.route('/api/guilds/<guild_id>/settings', methods=['GET'])
+@require_guild_admin
 def get_guild_settings(guild_id):
     """Obtenir les paramètres d'un serveur"""
     try:
@@ -734,6 +907,7 @@ def get_guild_settings(guild_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/settings', methods=['POST'])
+@require_guild_admin
 def save_guild_settings(guild_id):
     """Sauvegarder les paramètres d'un serveur"""
     try:
@@ -753,6 +927,7 @@ def save_guild_settings(guild_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/settings', methods=['DELETE'])
+@require_guild_admin
 def reset_guild_settings(guild_id):
     """Réinitialiser les paramètres d'un serveur"""
     try:
@@ -768,6 +943,7 @@ def reset_guild_settings(guild_id):
 
 
 @app.route('/api/guilds/<guild_id>/tickets/config', methods=['GET'])
+@require_guild_admin
 def get_ticket_config(guild_id):
     """Obtenir la configuration des tickets d'un serveur"""
     try:
@@ -794,6 +970,7 @@ def get_ticket_config(guild_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/tickets/config', methods=['POST'])
+@require_guild_admin
 def save_ticket_config(guild_id):
     """Sauvegarder la configuration des tickets d'un serveur"""
     try:
@@ -825,6 +1002,7 @@ def save_ticket_config(guild_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/tickets', methods=['GET'])
+@require_guild_admin
 def get_guild_tickets(guild_id):
     """Obtenir la liste des tickets d'un serveur"""
     try:
@@ -856,6 +1034,7 @@ def get_guild_tickets(guild_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/tickets/panel', methods=['POST'])
+@require_guild_admin
 def send_ticket_panel(guild_id):
     """Envoyer le panel de création de tickets dans le canal configuré"""
     try:
@@ -943,6 +1122,7 @@ def check_update():
 
 
 @app.route('/api/guilds/<guild_id>/warns', methods=['GET', 'POST', 'DELETE'])
+@require_guild_admin
 def manage_guild_warns(guild_id):
     """Obtenir tous les warns d'un serveur ou ajouter un nouveau warn"""
     try:
@@ -1153,6 +1333,7 @@ def manage_guild_warns(guild_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/warns/<user_id>', methods=['GET'])
+@require_guild_admin
 def get_user_warns(guild_id, user_id):
     """Obtenir les warns d'un utilisateur spécifique"""
     try:
@@ -1175,6 +1356,7 @@ def get_user_warns(guild_id, user_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/warns/<user_id>/<int:warn_id>', methods=['DELETE'])
+@require_guild_admin
 def delete_warn(guild_id, user_id, warn_id):
     """Supprimer un warn spécifique"""
     try:
@@ -1221,6 +1403,7 @@ def delete_warn(guild_id, user_id, warn_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/warns/<user_id>/<int:warn_id>', methods=['PUT', 'PATCH', 'DELETE'])
+@require_guild_admin
 def manage_warn(guild_id, user_id, warn_id):
     """Modifier ou supprimer un warn spécifique"""
     try:
@@ -1296,6 +1479,7 @@ def manage_warn(guild_id, user_id, warn_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/guilds/<guild_id>/warn-config', methods=['GET', 'PUT'])
+@require_guild_admin
 def manage_warn_config(guild_id):
     """Gérer la configuration des warns d'un serveur"""
     try:

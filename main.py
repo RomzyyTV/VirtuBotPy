@@ -133,9 +133,9 @@ async def check_github_updates():
                 else:
                     print(f"⚠️ Impossible de vérifier les mises à jour (Status: {response.status})")
     except aiohttp.ClientError as e:
-        print(f"❌ Erreur de connexion GitHub: {e}")
+        pass
     except Exception as e:
-        print(f"❌ Erreur lors de la vérification des mises à jour: {e}")
+        pass
 
 print("📁 Démarrage du bot...")
 
