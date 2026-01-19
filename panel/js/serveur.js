@@ -1,8 +1,8 @@
-﻿let currentGuildId = null;
+let currentGuildId = null;
 let guildData = null;
 let discordUser = null;
 
-// Helper pour ajouter le token aux URLs
+
 function addTokenToUrl(url) {
     const token = localStorage.getItem('discord_token');
     if (!token) return url;
@@ -1045,7 +1045,7 @@ async function addBan() {
 
 async function loadGuildSettings() {
     try {
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/settings`);
+        const response = await fetch(`/api/guilds/${currentGuildId}/settings`);
         const settings = await response.json();
         
         document.getElementById('commandPrefix').value = settings.prefix || '!';
@@ -1132,7 +1132,7 @@ async function saveGuildSettings() {
             mod_role: document.getElementById('modRole').value || null
         };
         
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/settings`, {
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/settings`), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1161,7 +1161,7 @@ async function resetGuildSettings() {
     }
     
     try {
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/settings`, {
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/settings`), {
             method: 'DELETE'
         });
         
@@ -1189,7 +1189,7 @@ async function loadTicketsPage() {
 
 async function loadTicketConfig() {
     try {
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/tickets/config`);
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/tickets/config`));
         const config = await response.json();
         
         if (guildData) {
@@ -1267,7 +1267,7 @@ async function saveTicketConfig() {
             ticket_support_roles: supportRoles
         };
         
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/tickets/config`, {
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/tickets/config`), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1296,7 +1296,7 @@ async function sendTicketPanel() {
     }
     
     try {
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/tickets/panel`, {
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/tickets/panel`), {
             method: 'POST'
         });
         
@@ -1317,7 +1317,7 @@ async function sendTicketPanel() {
 
 async function loadTicketStats() {
     try {
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/tickets`);
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/tickets`));
         const data = await response.json();
         
         currentTicketsData = data;
@@ -1359,7 +1359,7 @@ async function loadTicketsList() {
     container.innerHTML = '<p class="loading">Chargement des tickets...</p>';
     
     try {
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/tickets`);
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/tickets`));
         const data = await response.json();
         
         currentTicketsData = data;
@@ -1552,7 +1552,7 @@ async function loadWarnsPage() {
 
 async function loadWarnConfig() {
     try {
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warn-config`);
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warn-config`));
         const config = await response.json();
         
         displayWarnRules(config.actions || {});
@@ -1770,7 +1770,7 @@ async function saveWarnConfig() {
             }
         });
         
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warn-config`, {
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warn-config`), {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -1798,7 +1798,7 @@ async function saveWarnConfig() {
 
 async function loadWarnsStats() {
     try {
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warns`);
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warns`));
         const data = await response.json();
         
         const warns = data.warns || {};
@@ -1826,7 +1826,7 @@ async function loadWarnsStats() {
             );
             
             try {
-                const membersResponse = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/members`);
+                const membersResponse = await fetch(`/api/guilds/${currentGuildId}/members`);
                 const members = await membersResponse.json();
                 const member = members.find(m => m.id === mostWarned);
                 if (member) {
@@ -1847,7 +1847,7 @@ async function loadWarnsStats() {
 
 async function loadWarns() {
     try {
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warns`);
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warns`));
         const data = await response.json();
         
         currentWarnsData = data;
@@ -1880,7 +1880,7 @@ async function displayWarns(warns) {
 
     let members = [];
     try {
-        const membersResponse = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/members`);
+        const membersResponse = await fetch(`/api/guilds/${currentGuildId}/members`);
         members = await membersResponse.json();
     } catch (error) {
         console.error('Erreur récupération membres:', error);
@@ -1976,7 +1976,7 @@ async function updateWarnReason(userId, warnId, newReason) {
     }
     
     try {
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warns/${userId}/${warnId}`, {
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warns/${userId}/${warnId}`), {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -2005,7 +2005,7 @@ async function removeWarn(userId, warnId) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet avertissement ?')) return;
     
     try {
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warns/${userId}/${warnId}`, {
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warns/${userId}/${warnId}`), {
             method: 'DELETE'
         });
         
@@ -2027,7 +2027,7 @@ async function clearUserWarns(userId) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer TOUS les avertissements de cet utilisateur ?')) return;
     
     try {
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warns?user_id=${userId}`, {
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warns?user_id=${userId}`), {
             method: 'DELETE'
         });
         
@@ -2131,7 +2131,7 @@ async function addNewWarn() {
         
         const discordUser = JSON.parse(localStorage.getItem('discord_user') || '{}');
         
-        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warns`, {
+        const response = await fetch(addTokenToUrl(`/api/guilds/${currentGuildId}/warns`), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
