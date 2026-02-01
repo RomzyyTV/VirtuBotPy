@@ -143,7 +143,8 @@ async def load_extensions():
     for extension in os.listdir('./cogs'):
         if extension.endswith('.py'):
             await bot.load_extension(f'cogs.{extension[:-3]}')
-            print(f'Le module cogs.{extension[:-3]} a été chargé.')
+            if os.getenv("DEBUG_MODE").lower() == "true":
+                print(f'Le module cogs.{extension[:-3]} a été chargé.')
 
 @bot.event
 async def on_ready():
@@ -174,7 +175,7 @@ async def on_ready():
     
     # Vérifier que l'URL est valide si le streaming est activé
     if streaming_enabled and (not streaming_url or streaming_url.endswith('/')):
-        print("⚠️ URL de streaming invalide, streaming désactivé")
+        print(" URL de streaming invalide, streaming désactivé")
         streaming_enabled = False
     
     status_map = {
