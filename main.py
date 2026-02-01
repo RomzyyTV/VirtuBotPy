@@ -166,11 +166,16 @@ async def on_ready():
     time.sleep(5)
     print(f"{bot.user} est dans {len(bot.guilds)} serveurs.")
     
-    bot_status = os.getenv("BOT_STATUS", "dnd").lower()
+    bot_status = os.getenv("BOT_STATUS", "idle").lower()
     activity_type = os.getenv("BOT_ACTIVITY_TYPE", "game").lower()
     streaming_enabled = os.getenv("BOT_STREAMING_ENABLED", "false").lower() == "true"
-    streaming_url = os.getenv("BOT_STREAMING_URL", "https://twitch.tv/")
+    streaming_url = os.getenv("BOT_STREAMING_URL", "").strip()
     bot_activity_text = os.getenv("BOT_ACTIVITY", "VirtuBot")
+    
+    # Vérifier que l'URL est valide si le streaming est activé
+    if streaming_enabled and (not streaming_url or streaming_url.endswith('/')):
+        print("⚠️ URL de streaming invalide, streaming désactivé")
+        streaming_enabled = False
     
     status_map = {
         "online": discord.Status.online,
@@ -178,12 +183,12 @@ async def on_ready():
         "dnd": discord.Status.dnd,
         "invisible": discord.Status.invisible
     }
-    status = status_map.get(bot_status, discord.Status.dnd)
+    status = status_map.get(bot_status, discord.Status.idle)
     
     activity = None
-    if streaming_enabled:
+    if streaming_enabled and streaming_url:
         activity = discord.Streaming(name=bot_activity_text, url=streaming_url)
-    elif activity_type == "streaming":
+    elif activity_type == "streaming" and streaming_url:
         activity = discord.Streaming(name=bot_activity_text, url=streaming_url)
     elif activity_type == "watching":
         activity = discord.Activity(type=discord.ActivityType.watching, name=bot_activity_text)
